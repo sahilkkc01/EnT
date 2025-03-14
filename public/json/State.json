@@ -1,0 +1,138 @@
+[ 
+  {
+    "stateCode": "AN",
+    "stateName": "Andaman and Nicobar Islands"
+  },
+  {
+    "stateCode": "AP",
+    "stateName": "Andhra Pradesh"
+  },
+  {
+    "stateCode": "delhi",
+    "stateName": "Arunachal Pradesh"
+  },
+  {
+    "stateCode": "AS",
+    "stateName": "Assam"
+  },
+  {
+    "stateCode": "BR",
+    "stateName": "Bihar"
+  },
+  {
+    "stateCode": "CG",
+    "stateName": "Chhattisgarh"
+  },
+  {
+    "stateCode": "CH",
+    "stateName": "Chandigarh"
+  },
+  {
+    "stateCode": "DL",
+    "stateName": "Delhi"
+  },
+  {
+    "stateCode": "DN",
+    "stateName": "Dadra and Nagar Haveli and Daman and Diu"
+  },
+  {
+    "stateCode": "GA",
+    "stateName": "Goa"
+  },
+  {
+    "stateCode": "GJ",
+    "stateName": "Gujarat"
+  },
+  {
+    "stateCode": "HP",
+    "stateName": "Himachal Pradesh"
+  },
+  {
+    "stateCode": "HR",
+    "stateName": "Haryana"
+  },
+  {
+    "stateCode": "JH",
+    "stateName": "Jharkhand"
+  },
+  {
+    "stateCode": "KA",
+    "stateName": "Karnataka"
+  },
+  {
+    "stateCode": "KL",
+    "stateName": "Kerala"
+  },
+  {
+    "stateCode": "LD",
+    "stateName": "Lakshadweep"
+  },
+  {
+    "stateCode": "MH",
+    "stateName": "Maharashtra"
+  },
+  {
+    "stateCode": "ML",
+    "stateName": "Meghalaya"
+  },
+  {
+    "stateCode": "MN",
+    "stateName": "Manipur"
+  },
+  {
+    "stateCode": "MP",
+    "stateName": "Madhya Pradesh"
+  },
+  {
+    "stateCode": "MZ",
+    "stateName": "Mizoram"
+  },
+  {
+    "stateCode": "NL",
+    "stateName": "Nagaland"
+  },
+  {
+    "stateCode": "OR",
+    "stateName": "Odisha"
+  },
+  {
+    "stateCode": "PB",
+    "stateName": "Punjab"
+  },
+  {
+    "stateCode": "PY",
+    "stateName": "Puducherry"
+  },
+  {
+    "stateCode": "RJ",
+    "stateName": "Rajasthan"
+  },
+  {
+    "stateCode": "SK",
+    "stateName": "Sikkim"
+  },
+  {
+    "stateCode": "TG",
+    "stateName": "Telangana"
+  },
+  {
+    "stateCode": "TN",
+    "stateName": "Tamil Nadu"
+  },
+  {
+    "stateCode": "TR",
+    "stateName": "Tripura"
+  },
+  {
+    "stateCode": "UK",
+    "stateName": "Uttarakhand"
+  },
+  {
+    "stateCode": "UP",
+    "stateName": "Uttar Pradesh"
+  },
+  {
+    "stateCode": "WB",
+    "stateName": "West Bengal"
+  }
+]

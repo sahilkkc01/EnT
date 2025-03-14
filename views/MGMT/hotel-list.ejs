@@ -1,0 +1,117 @@
+<!doctype html>
+<html
+  lang="en"
+  class="light-style layout-menu-fixed layout-compact"
+  dir="ltr"
+  data-theme="theme-default"
+  data-assets-path="../assets/"
+  data-template="vertical-menu-template-free"
+  data-style="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+
+    <title>List of Hotels</title>
+
+  <%- include('../header') -%>
+
+          <!-- Content wrapper -->
+          <div class="content-wrapper">
+            <!-- Content -->
+            <div class="container-xxl flex-grow-1 container-p-y">
+              <!-- Basic Bootstrap Table -->
+              <div class="card">
+                <div class="row card-header flex-column flex-md-row pb-4">
+				    <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0">
+				        <h5 class="card-title mb-0 text-md-start text-center">All Hotels</h5>
+				    </div>
+				    <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto mt-0">
+				        <div class="dt-buttons btn-group flex-wrap mb-0"> 
+				
+                            <div class="btn-group">
+                            <input type="search" class="form-control ms-4" id="searchBox" placeholder="Search" aria-controls="DataTables_Table_1">
+                            
+                            <button class="btn buttons-collection btn-label-primary dropdown-toggle me-4" tabindex="0" aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false"><span><span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-export me-sm-1"></i> <span class="d-none d-sm-inline-block">Export</span></span></span></button></div> 
+                            
+                            <button class="btn create-new btn-primary" tabindex="0" onclick=" window.location.href = '/HR/add-employee'" aria-controls="DataTables_Table_0" type="button"><span><span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-plus icon-sm"></i> <span class="d-none d-sm-inline-block">Add Employee</span></span></span></button> 
+                              </div>
+				    </div>
+				</div>
+				
+                <div class="table-responsive text-nowrap">
+                  <table class="table" id="hotelTable">
+                    <thead>
+                      <tr>
+                        <th>Hotel ID</th>
+                        <th>Hotel Name</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Total Rooms</th>
+                        <th>USP</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="hotelTbody" class="table-border-bottom-0">
+                    </tbody>
+                  </table>
+                  <div id="paginationControls"></div>
+                </div>
+              </div>
+              <!--/ Basic Bootstrap Table -->
+            </div>
+            <!-- / Content -->
+
+          <%- include('../footer') -%>
+
+          <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            axios.get("/management/get-hotels")
+                .then(response => {
+                    const hotels = response.data.hotels;
+                    const tbody = document.getElementById("hotelTbody");
+                    tbody.innerHTML = ""; // Clear existing content
+
+                    hotels.forEach(hotel => {
+                        const imageUrl = hotel.hotelImage
+                            ? `../MyUploads/${hotel.hotelImage}`
+                            : "../images/placeholder-hotel.png"; // Default placeholder
+
+                        // Create table row
+                        const row = `
+                            <tr data-hotel-id="${hotel.id}">
+                                <td>${hotel.id}</td>
+                                <td>
+                                    <img width="30" src="${imageUrl}" alt="" class="rounded-circle" />
+                                    ${hotel.hotelName}
+                                </td>
+                                <td>${hotel.city}</td>
+                                <td>${hotel.state}</td>
+                                <td>${hotel.totalRooms}</td>
+                                <td>${hotel.usp || "N/A"}</td>
+                                <td>${hotel.status ? "Active" : "Inactive"}</td>
+                                <td>
+                                    <button id="editHotel" class="btn btn-icon item-edit">
+                                        <i class="icon-base bx bx-edit icon-sm"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+
+                        tbody.innerHTML += row;
+                    });
+
+                    pagi_search('#searchBox', '#hotelTable', '#paginationControls');
+                })
+                .catch(error => {
+                    console.error("Error fetching hotel data:", error);
+                });
+
+            $('#hotelTable').on('click', '#editHotel', function() {
+                const id = $(this).closest('tr').data('hotel-id');
+                window.location.href = `/hotel/add-hotel?id=${id}`;
+            });
+        });
+          </script>

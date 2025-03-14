@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Hotel Registration</title>
+
+    <%- include('../header') -%>
+
+    <style>
+        .displaynone { display: none; }
+        .bx-qr-scan { font-size: 80px; }
+    </style>
+</head>
+<body>
+
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="row">
+            <div class="col-12">
+                <div class="card overflow-hidden">
+                    <h5 class="card-header">Hotel Registration</h5>
+                    <div class="card-body pt-4">
+                        <form id="HotelForm" method="POST" enctype="multipart/form-data">
+                            <div id="errordiv"></div>
+                            <div class="row g-4">
+
+                                <!-- Hotel Name -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Hotel Name*</label>
+                                    <input type="text" id="hotelName" name="hotelName" class="form-control" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="input__label">State*</label>
+                                    <select name="state" id="state" onchange="loadCity(this,'city')" class="form-control input-style" data-validation="required" data-error-message="State is required.">
+                                      <option value="">Select</option>
+                                  </select>
+                                      </div>
+                                <div class="col-md-3">
+                                    <label class="input__label">City*</label>
+                                    <select name="city" id="city" class="form-control input-style" data-validation="required" data-error-message="State is required.">
+                                      <option value="">Select</option>
+                                  </select>
+                                      </div>
+
+                                
+                                <!-- Location -->
+                              
+                                <div class="col-md-6">
+                                    <label class="form-label">Location*</label>
+                                    <input type="text" id="location" name="location" class="form-control" required>
+                                </div>
+
+                                <!-- Star Category -->
+                                <div class="col-md-3">
+                                    <label class="form-label">Star Category*</label>
+                                    <select id="starCategory" name="starCategory" class="form-select" required>
+                                        <option value="">Select</option>
+                                        <option value="1">1 Star</option>
+                                        <option value="2">2 Stars</option>
+                                        <option value="3">3 Stars</option>
+                                        <option value="4">4 Stars</option>
+                                        <option value="5">5 Stars</option>
+                                    </select>
+                                </div>
+
+                                <!-- Total No. of Rooms -->
+                                <div class="col-md-3">
+                                    <label class="form-label">Total No. of Rooms*</label>
+                                    <input type="number" id="totalRooms" name="totalRooms" class="form-control" required>
+                                </div>
+
+                                <!-- Room Types & Count (Dynamic) -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Room Types & Count</label>
+                                    <div id="roomTypesContainer">
+                                        <div class="d-flex mb-2">
+                                            <input type="text" name="roomType[]" class="form-control me-2" placeholder="Room Type">
+                                            <input type="number" name="roomCount[]" class="form-control me-2" placeholder="Count">
+                                            <button type="button" class="btn btn-danger remove-room">X</button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary mt-2" id="addRoomType">+ Add Room Type</button>
+                                </div>
+
+                                <!-- Event Venue -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Event Venue</label>
+                                    <select id="eventVenue" name="eventVenue" class="form-select">
+                                        <option value="">Select Venue</option>
+                                        <option value="Hall">Hall</option>
+                                        <option value="Lawn">Lawn</option>
+                                        <option value="Both">Both</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+
+                                <!-- USP -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Unique Selling Points (USP)</label>
+                                    <input type="text" id="usp" name="usp" class="form-control">
+                                </div>
+
+                                <!-- Point of Contact -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Point of Contact</label>
+                                    <div id="pointOfContactContainer">
+                                        <div class="d-flex mb-2">
+                                            <input type="text" name="contactType[]" class="form-control me-2" placeholder="Type (e.g., Reception)">
+                                            <input type="text" name="contactName[]" class="form-control me-2" placeholder="Name">
+                                            <input type="text" name="contactNumber[]" class="form-control me-2" placeholder="Phone Number">
+                                            <button type="button" class="btn btn-danger remove-contact">X</button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-primary mt-2" id="addContact">+ Add Contact</button>
+                                </div>
+
+                                <!-- Hotel Image -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Hotel Image</label>
+                                    <input type="file" id="hotelImage" name="hotelImage" class="form-control" accept="image/png, image/jpeg">
+                                    <div id="imagePreview" class="mt-2 d-none">
+                                        <img id="previewImg" src="" alt="Hotel Image" class="img-fluid rounded shadow-sm" style="max-width: 100px; max-height: 100px;">
+                                    </div>
+                                    <small id="fileError" class="text-danger d-none">Only JPG, JPEG, PNG under 400KB allowed.</small>
+                                </div>
+
+                            </div>
+
+                            <div id="loadingIndicator"></div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary me-3">Save</button>
+                                <button type="reset" onclick="window.location.href = '/hotels'" class="btn btn-outline-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') -%>
+
+<script>
+$(document).ready(function () {
+ 
+    console.log("Document Ready");
+
+    // Handle Room Type Addition
+    $("#addRoomType").on("click", function () {
+        $("#roomTypesContainer").append(`
+            <div class="d-flex mb-2">
+                <input type="text" name="roomType[]" class="form-control me-2" placeholder="Room Type">
+                <input type="number" name="roomCount[]" class="form-control me-2" placeholder="Count">
+                <button type="button" class="btn btn-danger remove-room">X</button>
+            </div>
+        `);
+    });
+
+    // Remove Room Type
+    $(document).on("click", ".remove-room", function () {
+        $(this).parent().remove();
+    });
+
+    // Handle Contact Addition
+    $("#addContact").on("click", function () {
+        $("#pointOfContactContainer").append(`
+            <div class="d-flex mb-2">
+                <input type="text" name="contactType[]" class="form-control me-2" placeholder="Type (e.g., Reception)">
+                <input type="text" name="contactName[]" class="form-control me-2" placeholder="Name">
+                <input type="text" name="contactNumber[]" class="form-control me-2" placeholder="Phone Number">
+                <button type="button" class="btn btn-danger remove-contact">X</button>
+            </div>
+        `);
+    });
+
+    // Remove Contact
+    $(document).on("click", ".remove-contact", function () {
+        $(this).parent().remove();
+    });
+
+    const formId = "#HotelForm"; // Form ID
+    const errorDivId = "#errordiv"; // Error message container
+    const loadingDiv = "#loadingIndicator"; // Loading indicator
+    const submitUrl = "/management/hotelReg"; // API endpoint
+    $(formId).on("submit", async function (event) {
+    event.preventDefault(); // Prevent default form submission
+
+    const { isValid, errorMessage } = validateForm(formId); // Validate form
+    if (!isValid) {
+        $(errorDivId).removeClass("alert-success").addClass("alert-danger").text(errorMessage).show();
+        return;
+    }
+
+    const formData = new FormData(this);
+    
+    // Convert room types into key-value pairs
+    const roomTypes = [];
+    const roomTypeInputs = $("input[name='roomType[]']");
+    const roomCountInputs = $("input[name='roomCount[]']");
+    
+    roomTypeInputs.each((index, element) => {
+        roomTypes.push({
+            type: $(element).val(),
+            count: roomCountInputs.eq(index).val()
+        });
+    });
+
+    // Convert contacts into key-value pairs
+    const contacts = [];
+    const contactTypeInputs = $("input[name='contactType[]']");
+    const contactNameInputs = $("input[name='contactName[]']");
+    const contactNumberInputs = $("input[name='contactNumber[]']");
+
+    contactTypeInputs.each((index, element) => {
+        contacts.push({
+            type: $(element).val(),
+            name: contactNameInputs.eq(index).val(),
+            number: contactNumberInputs.eq(index).val()
+        });
+    });
+
+    // Remove existing FormData values for these fields
+    formData.delete("roomType[]");
+    formData.delete("roomCount[]");
+    formData.delete("contactType[]");
+    formData.delete("contactName[]");
+    formData.delete("contactNumber[]");
+
+    // Append structured data to FormData
+    formData.append("roomTypes", JSON.stringify(roomTypes));
+    formData.append("contacts", JSON.stringify(contacts));
+
+    try {
+        $(loadingDiv).show(); // Show loading indicator
+
+        const response = await axios.post(submitUrl, formData, {
+            headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        console.log("Success:", response);
+        $(errorDivId).removeClass("alert-danger").addClass("alert-success").text(response.data.message).show();
+    } catch (error) {
+        console.error("Error:", error);
+        $(errorDivId).removeClass("alert-success").addClass("alert-danger").text(error.response?.data?.message || "Unknown error").show();
+    } finally {
+        $(loadingDiv).hide(); // Hide loading indicator
+    }
+});
+
+    // Image Preview
+    $("#hotelImage").on("change", function (event) {
+        const file = event.target.files[0];
+        const fileError = $("#fileError");
+        const previewDiv = $("#imagePreview");
+        const previewImg = $("#previewImg");
+
+        fileError.addClass("d-none");
+        previewDiv.addClass("d-none");
+
+        if (file && ["image/jpeg", "image/png"].includes(file.type) && file.size <= 400 * 1024) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.attr("src", e.target.result);
+                previewDiv.removeClass("d-none");
+            };
+            reader.readAsDataURL(file);
+        } else {
+            fileError.removeClass("d-none");
+            $(this).val("");
+        }
+    });
+
+    
+    loadState('state');
+});
+
+
+</script>
+
+</body>
+</html>
