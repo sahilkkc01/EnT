@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lead Management System</title>
+    <%- include('../header') -%>
+        <style>
+            /* Similar styling as client page with adjustments for lead-specific fields */
+            .lead-details {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 0.5rem 1rem;
+                padding: 1rem;
+                background: #f8f9fa;
+                border-radius: 8px;
+                margin-bottom: 1.5rem;
+            }
+
+            .detail-item {
+                padding: 0.8rem;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            .status-badge {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.8rem;
+                border-radius: 20px;
+            }
+        </style>
+</head>
+
+<body>
+    <div class="content-wrapper">
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="card">
+                <div class="row card-header flex-column flex-md-row pb-4">
+                    <div class="d-md-flex justify-content-between align-items-center col-md-auto me-auto mt-0">
+                        <h5 class="card-title mb-0 text-md-start text-center">Lead Management</h5>
+                    </div>
+                    <div class="col-md-auto mt-3 mt-md-0">
+                        <div class="lead-status">
+                            <span class="status-label">Lead Status:</span>
+                            <span id="leadStatus" class="badge status-badge bg-secondary">Loading...</span>
+                            <span class="status-label ms-3">Priority:</span>
+                            <span id="leadPriority" class="badge status-badge bg-secondary">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Basic Info Section -->
+                <div class="card-body border-bottom">
+                    <h6 class="mb-3">Client Details</h6>
+                    <div class="client-details d-flex flex-wrap justify-content-between align-items-center">
+                        <div class="detail-item me-3 mb-2">
+                            <h6>Client Name</h6>
+                            <p id="clientName" class="mb-0">Loading...</p>
+                        </div>
+                        <div class="detail-item me-3 mb-2">
+                            <h6>Primary Phone</h6>
+                            <p id="clientPhone" class="mb-0">Loading...</p>
+                        </div>
+                        <div class="detail-item me-3 mb-2">
+                            <h6>Email</h6>
+                            <p id="clientEmail" class="mb-0">Loading...</p>
+                        </div>
+                        <div class="detail-item me-3 mb-2">
+                            <h6>Client Type</h6>
+                            <p id="clientType" class="mb-0">Loading...</p>
+                        </div>
+                        <div class="detail-item me-3 mb-2">
+                            <h6>State</h6>
+                            <p id="clientState" class="mb-0">Loading...</p>
+                        </div>
+                        <div class="detail-item me-3 mb-2">
+                            <h6>City</h6>
+                            <p id="clientCity" class="mb-0">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Lead Details Section -->
+                <div class="card-body border-bottom">
+                    <h6 class="mb-3">Lead Details</h6>
+                    <div class="lead-details">
+                        <div class="detail-item">
+                            <h6>Event Type</h6>
+                            <p id="eventType">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Event Date</h6>
+                            <p id="eventDate">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Venue</h6>
+                            <p id="venue">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>People Count</h6>
+                            <p id="peopleCount">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Lead Source</h6>
+                            <p id="leadSource">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Next Follow-up</h6>
+                            <p id="nextFollowup">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Requirements</h6>
+                            <p id="requirements">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Additional Details</h6>
+                            <p id="additionalDetails">Loading...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Section -->
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="leadTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#leadFollowUp">Follow Up</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#leadInteractions">Interactions</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#quotations">Quotations</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#leadTeam">Team</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3">
+                        <!-- Follow Up Tab -->
+                        <div id="leadFollowUp" class="tab-pane fade show active">
+                            <form id="followUpForm" method="post">
+
+                                <div class="row">
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Next Call Date & Time</label>
+                                            <input type="datetime-local" class="form-control" name="nextFollowUpTime"
+                                                id="nextFollowUpTime" required>
+                                        </div>
+
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Remark</label>
+                                        <textarea class="form-control" rows="3" name="remark" id="remark"></textarea>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Follow-up</button>
+                            </form>
+
+
+                            <div class="mt-4">
+                                <h5>Follow-up History</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Next Follow-up Date</th>
+                                                <th>Remark</th>
+                                                <th>Status</th>
+                                                <th style="min-width: 100px;">Recorded By</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="followupTableBody">
+                                            <!-- Follow-ups will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Interactions Tab -->
+                        <!-- Combined Interaction and Lead Details Form -->
+                        <div id="leadInteractions" class="tab-pane fade show">
+                            <form id="interactionForm" method="post">
+                                <div class="row">
+                                    <!-- Interaction Section -->
+                                    <div class="col-md-6">
+                                        <h5>Interaction Details</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label">Interaction Type</label>
+                                            <select class="form-select" name="interaction_type" required>
+                                                <option value="phone">Phone Call</option>
+                                                <option value="email">Email</option>
+                                                <option value="meeting">Meeting</option>
+                                                <option value="site-visit">Site Visit</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Date & Time</label>
+                                            <input type="datetime-local" class="form-control" name="interaction_date"
+                                                required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Notes</label>
+                                            <textarea class="form-control" rows="3" name="notes" required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Outcome</label>
+                                            <select class="form-select" name="outcome" required>
+                                                <option value="positive">Positive</option>
+                                                <option value="neutral">Neutral</option>
+                                                <option value="negative">Negative</option>
+                                            </select>
+                                        </div>
+
+                                    </div>
+
+                                    <!-- Interaction Table -->
+                                    <div class="col-md-6">
+                                        <h5>Past Interactions</h5>
+                                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="min-width: 200px;">Date</th>
+                                                        <th>Type</th>
+                                                        <th>Notes</th>
+                                                        <th>Outcome</th>
+                                                      
+                                                        <th style="min-width: 150px;">Recorded By</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="interactionsTableBody">
+                                                    <!-- Interactions will be populated here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                <!-- Single Submit Button for Combined Data -->
+                                <button type="submit" class="btn btn-primary">Log Interaction</button>
+                            </form>
+                        </div>
+
+                        <!-- Quotations Tab -->
+                        <div id="quotations" class="tab-pane fade">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <form id="quotationForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Quotation Date</label>
+                                            <input type="date" class="form-control" id="quotation_date" name="quotation_date" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Details</label>
+                                            <textarea class="form-control" rows="3" name="details" required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Amount</label>
+                                            <input type="number" class="form-control" name="amount" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Send Quotation</button>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Amount</th>
+                                                    <th style="min-width: 180px;">Status</th>
+                                                    <th style="min-width: 120px;">Sent By</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="quotationsTableBody">
+                                                <!-- Quotations will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="leadTeam" class="tab-pane fade">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Assigned Team Members</h5>
+                                    <div class="list-group" id="assignedTeamList"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Assign New Member</h5>
+                                    <form id="assignTeamForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Select Team Member</label>
+                                            <select class="form-select" id="team_member" name="team_member"
+                                                required></select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Role</label>
+                                            <input type="text" class="form-control" name="role" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Assign Member</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../footer') -%>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            document.getElementById("quotation_date").value = new Date().toISOString().split('T')[0];
+            const urlParams = new URLSearchParams(window.location.search);
+            const leadId = urlParams.get('id');
+            
+            if (!leadId) {
+                alert("Invalid lead ID");
+                return;
+            }
+        
+            try {
+                // Load lead and client data first
+                const leadResponse = await axios.get(`/marketing/leads/${leadId}`);
+                const lead = leadResponse.data.data;
+                const clientResponse = await axios.get(`/marketing/getClientDetails/${lead.client_id}`);
+                const client = clientResponse.data.data;
+        
+                // Populate client info
+                document.getElementById('clientName').textContent = client.clientName;
+                document.getElementById('clientPhone').textContent = client.phoneNumber;
+                document.getElementById('clientEmail').textContent = client.email;
+                document.getElementById('clientType').textContent = client.clientType;
+                document.getElementById('clientState').textContent = client.state;
+                document.getElementById('clientCity').textContent = client.city;
+        
+                // Populate lead info
+                document.getElementById('eventType').textContent = lead.event_type;
+                document.getElementById('eventDate').textContent = new Date(lead.event_date).toLocaleDateString();
+                document.getElementById('venue').textContent = lead.venue;
+                document.getElementById('peopleCount').textContent = lead.people_count;
+                document.getElementById('leadSource').textContent = lead.lead_source;
+                document.getElementById('nextFollowup').textContent = new Date(lead.next_followup).toLocaleString();
+                document.getElementById('requirements').textContent = lead.requirement;
+                document.getElementById('additionalDetails').textContent = lead.additional_details;
+        
+                // Set status badges
+                const statusColors = {
+                    'new': 'info',
+                    'in_progress': 'primary',
+                    'follow_up': 'warning',
+                    'closed_won': 'success',
+                    'closed_lost': 'danger'
+                };
+                document.getElementById('leadStatus').className = `badge status-badge bg-${statusColors[lead.lead_status]}`;
+                document.getElementById('leadStatus').textContent = lead.lead_status.replace('_', ' ').toUpperCase();
+        
+                const priorityColors = {
+                    'high': 'danger',
+                    'medium': 'warning',
+                    'low': 'success',
+                    'urgent': 'primary'
+                };
+                document.getElementById('leadPriority').className = `badge status-badge bg-${priorityColors[lead.priority]}`;
+                document.getElementById('leadPriority').textContent = lead.priority.toUpperCase();
+        
+                // Initialize rest of the page
+                await loadTeamMembers();
+                loadFollowUps(leadId);
+                loadInteractions(leadId);
+                loadQuotations(leadId);
+                loadAssignedTeam(leadId);
+        
+                // Form submission handlers
+                document.getElementById("followUpForm").addEventListener("submit", async (event) => {
+                    event.preventDefault();
+                    await handleFollowUpSubmit(leadId);
+                });
+        
+                document.getElementById("interactionForm").addEventListener("submit", async (event) => {
+                    event.preventDefault();
+                    await handleInteractionSubmit(leadId);
+                });
+        
+                document.getElementById("quotationForm").addEventListener("submit", async (event) => {
+                    event.preventDefault();
+                    await handleQuotationSubmit(leadId);
+                });
+        
+                document.getElementById("assignTeamForm").addEventListener("submit", async (event) => {
+                    event.preventDefault();
+                    await handleTeamAssignment(leadId);
+                });
+        
+            } catch (error) {
+                console.error("Error initializing page:", error);
+                alert('Failed to load lead details');
+            }
+        });
+        
+        // ==================== Follow Up Functions ====================
+        // Helper function to get light background colors for each status
+function getStatusColor(status) {
+    switch (status) {
+        case 'Pending':
+            return '#fff9c4'; // Light Yellow
+        case 'In Progress':
+            return '#bbdefb'; // Light Blue
+        case 'Completed':
+            return '#c8e6c9'; // Light Green
+        case 'Closed':
+            return '#e0e0e0'; // Light Gray
+        default:
+            return '#ffffff'; // Default White
+    }
+}
+
+// ==================== Follow Up Functions ====================
+async function loadFollowUps(leadId) {
+    try {
+        const response = await axios.get(`/marketing/lead-followups/${leadId}`);
+        const tbody = document.querySelector("#followupTableBody");
+        tbody.innerHTML = "";
+        
+        // Loop through each follow-up and create a table row with a dropdown for status update
+        response.data.data.forEach(followUp => {
+            const statusColor = getStatusColor(followUp.status);
+            const row = `
+                <tr>
+                    <td>${new Date(followUp.nextFollowUpTime).toLocaleString()}</td>
+                    <td>${followUp.remark || 'N/A'}</td>
+                    <td>
+                        <select 
+                            class="form-control followup-status-dropdown" 
+                            data-followup-id="${followUp.id}" 
+                            style="background-color: ${statusColor}; color: #000;"
+                        >
+                            <option value="Pending" ${followUp.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="In Progress" ${followUp.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Completed" ${followUp.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                            <option value="Closed" ${followUp.status === 'Closed' ? 'selected' : ''}>Closed</option>
+                        </select>
+                    </td>
+                    <td>${followUp.empName} (${followUp.username})</td>
+                </tr>`;
+            tbody.innerHTML += row;
+        });
+    } catch (error) {
+        console.error("Error loading follow-ups:", error);
+        document.querySelector("#followupTableBody").innerHTML = 
+            "<tr><td colspan='4' class='text-center text-danger'>Error loading follow-ups</td></tr>";
+    }
+}
+
+// Global event listener for updating follow-up status
+document.addEventListener("change", async function (event) {
+    if (event.target.classList.contains("followup-status-dropdown")) {
+        const followUpId = event.target.dataset.followupId;
+        const newStatus = event.target.value;
+
+        // Update the dropdown color immediately based on the new status
+        const newColor = getStatusColor(newStatus);
+        event.target.style.backgroundColor = newColor;
+        event.target.style.color = '#000';
+
+        try {
+            const response = await axios.put(`/marketing/update-lead-followup-status/${followUpId}`, { status: newStatus });
+            if (response.status === 200) {
+                alert("Follow-up status updated successfully!");
+            }
+        } catch (error) {
+            console.error("Error updating follow-up status:", error);
+            alert("An error occurred while updating the follow-up status.");
+        }
+    }
+});
+
+        // ==================== Interaction Functions ====================
+        async function loadInteractions(leadId) {
+            try {
+                const response = await axios.get(`/marketing/lead-interactions/${leadId}`);
+                const tbody = document.getElementById("interactionsTableBody");
+                tbody.innerHTML = "";
+        
+                response.data.data.forEach(interaction => {
+                    const row = `
+                        <tr>
+                            <td>${new Date(interaction.interaction_date).toLocaleString()}</td>
+                            <td>${interaction.interaction_type}</td>
+                            <td>${interaction.notes}</td>
+                            <td><span class="badge bg-${getOutcomeBadgeClass(interaction.outcome)}">
+                                ${interaction.outcome.charAt(0).toUpperCase() + interaction.outcome.slice(1)}
+                            </span></td>
+               
+                            <td>${interaction.empName} (${interaction.username})</td>
+                        </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error("Error loading interactions:", error);
+            }
+        }
+        
+        // ==================== Quotation Functions ====================
+        async function loadQuotations(leadId) {
+    try {
+        const response = await axios.get(`/marketing/quotations/${leadId}`);
+        console.log('Response:', response);
+        const tbody = document.getElementById("quotationsTableBody");
+        tbody.innerHTML = "";
+
+        response.data.data.forEach(quotation => {
+            const row = `
+                <tr>
+                    <td>${new Date(quotation.date).toLocaleDateString()}</td>
+                    <td>₹${quotation.amount}</td>
+                    <td>
+                        <select class="form-control lead-status-dropdown" 
+                                onchange="updateQuotationStatus(${quotation.id}, this.value)">
+                            <option value="Accepted" ${quotation.status === 'Accepted' ? 'selected' : ''}>Accepted</option>
+                            <option value="Not Accepted" ${quotation.status === 'Not Accepted' ? 'selected' : ''}>Not Accepted</option>
+                        </select>
+                    </td>
+                    <td>${quotation.sentBy}</td>
+                    <td>
+                        ${quotation.status === 'Accepted' ? `<a href="/marketing/generate-invoice?id=${leadId}" class="btn btn-sm btn-success">Create Invoice</a>` : ''}
+                    </td>
+                </tr>`;
+            tbody.innerHTML += row;
+        });
+    } catch (error) {
+        console.error("Error loading quotations:", error);
+    }
+}
+
+        // ==================== Team Functions ====================
+        async function loadAssignedTeam(leadId) {
+            try {
+                const response = await axios.get(`/marketing/lead-team/${leadId}`);
+                const list = document.getElementById("assignedTeamList");
+                list.innerHTML = "";
+        
+                response.data.data.forEach(member => {
+                    const item = `
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${member.team_member_name} (${member.team_member_username})</h6>
+                                    <small class="text-muted">${member.role}</small></br>
+                                <small class="text-muted">${new Date(member.createdAt).toLocaleString('en-IN', { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit', 
+    day: '2-digit', 
+    month: 'short', 
+    year: 'numeric' 
+})}</small>
+
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" 
+                                        onclick="removeTeamMember(${member.id}, ${leadId})">
+                                    Remove
+                                </button>
+                            </div>
+                        </div>`;
+                    list.innerHTML += item;
+                });
+            } catch (error) {
+                console.error("Error loading team assignments:", error);
+            }
+        }
+        
+        // ==================== Form Handlers ====================
+        async function handleFollowUpSubmit(leadId) {
+            const form = document.getElementById("followUpForm");
+            const formData = new FormData(form);
+            formData.append("lead_id", leadId);
+        
+            try {
+                await axios.post('/marketing/lead-followup', Object.fromEntries(formData));
+                alert("Follow-up saved successfully!");
+                form.reset();
+                loadFollowUps(leadId);
+            } catch (error) {
+                console.error("Error saving follow-up:", error);
+                alert("Failed to save follow-up");
+            }
+        }
+        
+        async function handleInteractionSubmit(leadId) {
+            const form = document.getElementById("interactionForm");
+            const formData = new FormData(form);
+            formData.append("lead_id", leadId);
+        
+            try {
+                await axios.post('/marketing/lead-interactions', Object.fromEntries(formData));
+                alert("Interaction logged successfully!");
+                form.reset();
+                loadInteractions(leadId);
+            } catch (error) {
+                console.error("Error logging interaction:", error);
+                alert("Failed to log interaction");
+            }
+        }
+        
+        async function handleQuotationSubmit(leadId) {
+    const quotationDate = document.getElementById("quotation_date").value;
+    const details = document.querySelector("textarea[name='details']").value;
+    const amount = document.querySelector("input[name='amount']").value;
+
+    const payload = {
+        quotation_date: quotationDate,
+        details: details,
+        amount: amount,
+        lead_id: leadId
+    };
+
+    try {
+        await axios.post('/marketing/quotations', payload, {
+            headers: { 'Content-Type': 'application/json' }
+        });
+        alert("Quotation sent successfully!");
+        document.getElementById("quotationForm").reset();
+        loadQuotations(leadId);
+    } catch (error) {
+        console.error("Error sending quotation:", error);
+        alert("Failed to send quotation");
+    }
+}
+
+        async function handleTeamAssignment(leadId) {
+            const form = document.getElementById("assignTeamForm");
+            const formData = new FormData(form);
+            const selectedOption = document.querySelector("#team_member option:checked");
+        
+            const requestData = {
+                lead_id: leadId,
+                team_member_username: selectedOption.dataset.username,
+                team_member_name: selectedOption.dataset.name,
+                role: formData.get("role")
+            };
+        
+            try {
+                await axios.post('/marketing/lead-team', requestData);
+                alert("Team member assigned successfully!");
+                form.reset();
+                loadAssignedTeam(leadId);
+            } catch (error) {
+                console.error("Error assigning team member:", error);
+                alert("Failed to assign team member");
+            }
+        }
+        
+        // ==================== Helper Functions ====================
+        async function loadTeamMembers() {
+            try {
+                const response = await axios.get("/marketing/teamMembers");
+                const select = document.getElementById("team_member");
+                select.innerHTML = "";
+        
+                response.data.forEach(member => {
+                    const option = document.createElement("option");
+                    option.value = member.id;
+                    option.textContent = `${member.name} (${member.username})`;
+                    option.dataset.username = member.username;
+                    option.dataset.name = member.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error loading team members:", error);
+            }
+        }
+        
+        function getStatusBadgeClass(status) {
+            const statusClasses = {
+                "Pending": "warning",
+                "In Progress": "info",
+                "Completed": "success",
+                "Closed": "secondary"
+            };
+            return statusClasses[status] || "primary";
+        }
+        
+        function getOutcomeBadgeClass(outcome) {
+            const outcomeClasses = {
+                "positive": "success",
+                "neutral": "info",
+                "negative": "danger"
+            };
+            return outcomeClasses[outcome] || "secondary";
+        }
+        
+        async function removeTeamMember(assignmentId, leadId) {
+            if (!confirm("Are you sure you want to remove this team member?")) return;
+            
+            try {
+                await axios.delete(`/marketing/lead-team/${leadId}/team/${assignmentId}`);
+                alert("Team member removed successfully!");
+                loadAssignedTeam(leadId);
+            } catch (error) {
+                console.error("Error removing team member:", error);
+                alert("Failed to remove team member");
+            }
+        }
+        async function updateQuotationStatus(quotationId, status) {
+    try {
+        await axios.put(`/marketing/quotations/${quotationId}`, { status });
+
+        // Show a success message
+        if (window.toastr) {
+            toastr.success("Quotation status updated successfully!");
+        } else {
+            alert("Quotation status updated successfully!");
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const leadId = urlParams.get('id');
+        loadQuotations(leadId);
+
+    } catch (error) {
+        console.error("Error updating quotation status:", error);
+
+        // Show an error message
+        if (window.toastr) {
+            toastr.error("Failed to update status");
+        } else {
+            alert("Failed to update status");
+        }
+    }
+}
+
+        </script>
+</body>
+
+</html>

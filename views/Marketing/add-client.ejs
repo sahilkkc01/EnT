@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Client Entry</title>
+    <%- include('../header') -%>
+</head>
+
+<body>
+    <div class="content-wrapper">
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card overflow-hidden">
+                        <h5 class="card-header">Client Entry Form</h5>
+                        <div class="card-body pt-4">
+                            <form id="ClientForm" method="POST">
+                                <div id="errordiv"></div>
+                                <div class="row g-4">
+
+                                    <!-- Existing Client Check -->
+                                    <div id="clientCheckResult" class="col-12"></div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Existing Client Check</label>
+                                        <input type="text" id="oldClientCheck" name="oldClientCheck"
+                                            class="form-control" placeholder="Enter Email or Phone">
+                                    </div>
+
+                                    <!-- Client Type -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Client Type*</label>
+                                        <select id="clientType" name="clientType" class="form-select" required>
+                                            <option value="">Select</option>
+                                            <option value="individual">Individual</option>
+                                            <option value="corporate">Corporate</option>
+                                            <option value="key-account">Key Account</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-12" id="pocSection" style="display:none;">
+                                        <label class="form-label">Key Account POC Details</label>
+                                        <div id="pocContainer"></div>
+                                        <button type="button" class="btn btn-primary mt-2" id="addPoc">+ Add
+                                            POC</button>
+                                    </div>
+
+                                    <!-- Registration Date -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Registration Date*</label>
+                                        <input type="date" id="registrationDate" name="registrationDate"
+                                            class="form-control" required>
+                                    </div>
+
+                                    <!-- Client Name -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Client/Company Name*</label>
+                                        <input type="text" id="clientName" name="clientName" class="form-control"
+                                            required>
+                                    </div>
+
+                                    <!-- Contact Information -->
+                                    <div class="col-md-4">
+                                        <label class="form-label">Primary Phone*</label>
+                                        <input type="number" id="phoneNumber" name="phoneNumber" class="form-control"
+                                            required data-validation="mobileNum">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Secondary Phone</label>
+                                        <input type="number" id="secondaryPhone" name="secondaryPhone"
+                                            class="form-control">
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="col-md-4">
+                                        <label class="form-label">Email*</label>
+                                        <input type="email" id="email" name="email" class="form-control" required>
+                                    </div>
+
+                                    <!-- Address Information -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Address Line 1*</label>
+                                        <input type="text" id="address1" name="address1" class="form-control" required>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">Address Line 2</label>
+                                        <input type="text" id="address2" name="address2" class="form-control">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="input__label">State*</label>
+                                        <select name="state" id="state" onchange="loadCity(this,'city')"
+                                            class="form-control" required>
+                                            <option value="">Select</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="input__label">City</label>
+                                        <select name="city" id="city" class="form-control">
+                                            <option value="">Select</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Postal Code</label>
+                                        <input type="text" id="postalCode" name="postalCode" class="form-control">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Country*</label>
+                                        <input type="text" id="country" name="country" class="form-control"
+                                            value="India" readonly>
+                                    </div>
+
+                                    <!-- Client Category -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Client Category*</label>
+                                        <select id="clientCategory" name="clientCategory" class="form-select" required>
+                                            <option value="">Select</option>
+                                            <option value="event">Event Management</option>
+                                            <option value="tour">Tour Management</option>
+                                            <option value="both">Both</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Client Source -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Client Source*</label>
+                                        <select id="clientSource" name="clientSource" class="form-select" required>
+                                            <option value="">Select</option>
+                                            <option value="website">Website</option>
+                                            <option value="referral">Referral</option>
+                                            <option value="social-media">Social Media</option>
+                                            <option value="walk-in">Walk-in</option>
+                                            <option value="exhibition">Exhibition</option>
+                                            <option value="existing-client">Existing Client</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Preferred Contact Method -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Preferred Contact Method*</label>
+                                        <select id="preferredContact" name="preferredContact" class="form-select"
+                                            required>
+                                            <option value="">Select</option>
+                                            <option value="phone">Phone</option>
+                                            <option value="email">Email</option>
+                                            <option value="whatsapp">WhatsApp</option>
+                                            <option value="in-person">In Person</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Preferred Communication Time -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Preferred Communication Time</label>
+                                        <select id="preferredTime" name="preferredTime" class="form-select">
+                                            <option value="">Any Time</option>
+                                            <option value="morning">Morning (9AM-12PM)</option>
+                                            <option value="afternoon">Afternoon (12PM-4PM)</option>
+                                            <option value="evening">Evening (4PM-7PM)</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Client Requirements -->
+                                    <div class="col-md-12">
+                                        <label class="form-label">Client Requirements/Interests*</label>
+                                        <textarea id="clientRequirements" name="clientRequirements" class="form-control"
+                                            rows="3" required></textarea>
+                                    </div>
+
+                                    <!-- Client Status -->
+                                    <div class="col-md-4">
+                                        <label class="form-label">Client Status*</label>
+                                        <select id="clientStatus" name="clientStatus" class="form-select" required>
+                                            <option value="">Select Status</option>
+                                            <option value="prospect">Prospect</option>
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                            <option value="blacklisted">Blacklisted</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Priority -->
+                                    <div class="col-md-4">
+                                        <label class="form-label">Priority*</label>
+                                        <select id="priority" name="priority" class="form-select" required>
+                                            <option value="">Select Priority</option>
+                                            <option value="vip">VIP</option>
+                                            <option value="high">High</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="low">Low</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Client Since -->
+                                    <div class="col-md-4">
+                                        <label class="form-label">Client Since</label>
+                                        <input type="date" id="clientSince" name="clientSince" class="form-control">
+                                    </div>
+
+                                    <div class="col-md-12">
+                                        <label class="form-label">Previous Services Used</label>
+                                        <div id="servicesContainer">
+                                            <div class="d-flex mb-2">
+                                                <input type="text" name="service[]" class="form-control me-2"
+                                                    placeholder="Service Name">
+                                                <input type="date" name="serviceDate[]" class="form-control me-2"
+                                                    placeholder="Service Date">
+                                                <button type="button" class="btn btn-danger remove-service">X</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary mt-2" id="addService">+
+                                            Add Service</button>
+                                    </div>
+                                    <!-- Tax Information -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">GST Number (if applicable)</label>
+                                        <input type="text" id="gstNumber" name="gstNumber" class="form-control"
+                                            placeholder="Enter GSTIN">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label">PAN Number (if applicable)</label>
+                                        <input type="text" id="panNumber" name="panNumber" class="form-control"
+                                            placeholder="Enter PAN">
+                                    </div>
+
+
+
+                                    <!-- Notes -->
+                                    <div class="col-md-12">
+                                        <label class="form-label">Internal Notes</label>
+                                        <textarea id="internalNotes" name="internalNotes" class="form-control" rows="3"
+                                            placeholder="Enter additional details about the client"></textarea>
+                                    </div>
+
+
+
+                                </div>
+
+                                <div id="loadingIndicator"></div>
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary me-3">Save Client</button>
+                                    <button type="reset" onclick="window.location.href = '/marketing/clients'"
+                                        class="btn btn-outline-secondary">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<%- include('../footer') -%>
+
+</html>
+<script>
+
+    $(document).ready(async function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        const clientId = urlParams.get('id');
+
+        if (clientId) {
+            try {
+                const response = await axios.get(`/marketing/getClientDetails/${clientId}`);
+
+                if (response.data.success) {
+                    const client = response.data.data;
+
+                    // Populate form fields
+                    $('#clientType').val(client.clientType);
+                    $('#registrationDate').val(client.registrationDate);
+                    $('#clientName').val(client.clientName);
+                    $('#phoneNumber').val(client.phoneNumber);
+                    $('#secondaryPhone').val(client.secondaryPhone);
+                    $('#email').val(client.email);
+                    $('#address1').val(client.address1);
+                    $('#address2').val(client.address2);
+                    $('#postalCode').val(client.postalCode);
+                    $('#clientCategory').val(client.clientCategory);
+                    $('#clientSource').val(client.clientSource);
+                    $('#preferredContact').val(client.preferredContact);
+                    $('#preferredTime').val(client.preferredTime);
+                    $('#clientRequirements').val(client.clientRequirements);
+                    $('#clientStatus').val(client.clientStatus);
+                    $('#priority').val(client.priority);
+                    $('#clientSince').val(client.clientSince);
+                    $('#gstNumber').val(client.gstNumber);
+                    $('#panNumber').val(client.panNumber);
+                    $('#linkedin').val(client.linkedin);
+                    $('#facebook').val(client.facebook);
+                    $('#instagram').val(client.instagram);
+                    $('#internalNotes').val(client.internalNotes);
+
+                    // Load state and city
+                    await loadState("state", client.state);
+                    $("#state").trigger("change");
+
+                    setTimeout(() => {
+                        $("#city").val(client.city).trigger("change");
+                    }, 500);
+
+                    // Populate POC Details for Key Accounts
+                    $('#pocContainer').empty();
+                    if (client.clientType === 'key-account' && client.pocDetails && client.pocDetails.length > 0) {
+                        $('#pocSection').show();
+                        client.pocDetails.forEach(poc => {
+                            $("#pocContainer").append(`
+                                    <div class="d-flex mb-2">
+                                        <input type="text" name="pocName[]" class="form-control me-2" value="${poc.name}" placeholder="POC Name" required>
+                                        <input type="text" name="pocDesignation[]" class="form-control me-2" value="${poc.designation}" placeholder="Designation">
+                                      
+                                        <input type="text" name="pocContact[]" class="form-control me-2" value="${poc.contact}" placeholder="POC Contact" required>
+                                        <button type="button" class="btn btn-danger remove-poc">X</button>
+                                    </div>
+                                `);
+                        });
+                    }
+                    // Populate Service Details
+                    $('#servicesContainer').empty();
+                    if (client.serviceDetails && client.serviceDetails.length > 0) {
+                        client.serviceDetails.forEach(service => {
+                            $("#servicesContainer").append(`
+            <div class="d-flex mb-2">
+                <input type="text" name="service[]" class="form-control me-2" value="${service.service}" placeholder="Service Name" required>
+                <input type="date" name="serviceDate[]" class="form-control me-2" value="${service.serviceDate}" placeholder="Service Date" required>
+                <button type="button" class="btn btn-danger remove-service">X</button>
+            </div>
+        `);
+                        });
+                    }
+
+
+                }
+            } catch (error) {
+                console.error("Error fetching client data:", error);
+            }
+        } else {
+            loadState("state");
+            // Set default registration date to today
+            const today = new Date().toISOString().split('T')[0];
+            $('#registrationDate').val(today);
+        }
+
+        // Handle Client Type Change (show/hide POC section)
+        $('#clientType').change(function () {
+            $('#pocSection').toggle(this.value === 'key-account');
+            if (this.value !== 'key-account') {
+                $('#pocContainer').empty();
+            }
+        });
+
+        // Add POC button
+        $('#addPoc').click(function () {
+            $('#pocContainer').append(`
+                    <div class="d-flex mb-2">
+                        <input type="text" name="pocName[]" class="form-control me-2" placeholder="POC Name" required>
+                        <input type="text" name="pocDesignation[]" class="form-control me-2" placeholder="Designation">
+                      
+                        <input type="text" name="pocContact[]" class="form-control me-2" placeholder="POC Contact" required>
+                        <button type="button" class="btn btn-danger remove-poc">X</button>
+                    </div>
+                `);
+        });
+
+        // Remove POC
+        $(document).on('click', '.remove-poc', function () {
+            $(this).closest('.d-flex').remove();
+        });
+
+        // Existing Client Check
+        let debounceTimer;
+        $('#oldClientCheck').on('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(checkExistingClient, 500);
+        });
+
+        $("#addService").click(function () {
+            $("#servicesContainer").append(`
+                    <div class="d-flex mb-2">
+                        <input type="text" name="service[]" class="form-control me-2" placeholder="Service Name">
+                        <input type="date" name="serviceDate[]" class="form-control me-2" placeholder="Service Date">
+                        <button type="button" class="btn btn-danger remove-service">X</button>
+                    </div>
+                `);
+        });
+
+        // Remove service row
+        $(document).on("click", ".remove-service", function () {
+            $(this).closest(".d-flex").remove();
+        });
+        function checkExistingClient() {
+            let query = $("#oldClientCheck").val().trim();
+            if (query.length < 5) return;
+
+            $("#clientCheckResult").html('<div class="alert alert-info">Checking client database...</div>');
+
+            $.ajax({
+                url: "/marketing/check-client",
+                method: "POST",
+                data: { query: query },
+                success: async function (response) {
+                    if (response.exists) {
+                        const client = response.data;
+
+                        $("#clientCheckResult").html('<div class="alert alert-success">Existing client found! Auto-filling details...</div>');
+
+                        // Populate form fields
+                        $('#clientType').val(client.clientType);
+                        $('#registrationDate').val(client.registrationDate);
+                        $('#clientName').val(client.clientName);
+                        $('#phoneNumber').val(client.phoneNumber);
+                        $('#secondaryPhone').val(client.secondaryPhone);
+                        $('#email').val(client.email);
+                        $('#address1').val(client.address1);
+                        $('#address2').val(client.address2);
+                        $('#postalCode').val(client.postalCode);
+                        $('#clientCategory').val(client.clientCategory);
+                        $('#clientSource').val(client.clientSource);
+                        $('#preferredContact').val(client.preferredContact);
+                        $('#preferredTime').val(client.preferredTime);
+                        $('#clientRequirements').val(client.clientRequirements);
+                        $('#clientStatus').val(client.clientStatus);
+                        $('#priority').val(client.priority);
+                        $('#clientSince').val(client.clientSince);
+                        $('#gstNumber').val(client.gstNumber);
+                        $('#panNumber').val(client.panNumber);
+                        $('#linkedin').val(client.linkedin);
+                        $('#facebook').val(client.facebook);
+                        $('#instagram').val(client.instagram);
+                        $('#internalNotes').val(client.internalNotes);
+
+                        // Load state and city
+                        await loadState("state", client.state);
+                        $("#state").trigger("change");
+
+                        setTimeout(() => {
+                            $("#city").val(client.city).trigger("change");
+                        }, 500);
+
+                        // Populate POC Details for Key Accounts
+                        $('#pocContainer').empty();
+                        if (client.clientType === 'key-account' && client.pocDetails && client.pocDetails.length > 0) {
+                            $('#pocSection').show();
+                            client.pocDetails.forEach(poc => {
+                                $("#pocContainer").append(`
+                                        <div class="d-flex mb-2">
+                                            <input type="text" name="pocName[]" class="form-control me-2" value="${poc.name}" placeholder="POC Name" required>
+                                            <input type="text" name="pocDesignation[]" class="form-control me-2" value="${poc.designation}" placeholder="Designation">
+                                           
+                                            <input type="text" name="pocContact[]" class="form-control me-2" value="${poc.contact}" placeholder="POC Contact" required>
+                                            <button type="button" class="btn btn-danger remove-poc">X</button>
+                                        </div>
+                                    `);
+                            });
+                        }
+                        
+                        $('#servicesContainer').empty();
+                    if (client.serviceDetails && client.serviceDetails.length > 0) {
+                        client.serviceDetails.forEach(service => {
+                            $("#servicesContainer").append(`
+            <div class="d-flex mb-2">
+                <input type="text" name="service[]" class="form-control me-2" value="${service.service}" placeholder="Service Name" required>
+                <input type="date" name="serviceDate[]" class="form-control me-2" value="${service.serviceDate}" placeholder="Service Date" required>
+                <button type="button" class="btn btn-danger remove-service">X</button>
+            </div>
+        `);
+                        });
+                    }
+
+                    } else {
+                        $("#clientCheckResult").html('<div class="alert alert-warning">No existing client found. Please proceed with new client registration.</div>');
+                    }
+
+                   
+                },
+                error: function () {
+                    $("#clientCheckResult").html('<div class="alert alert-danger">Error checking client records. Please try again.</div>');
+                }
+            });
+        }
+
+        // Form Submission
+        $('#ClientForm').submit(async function (event) {
+            event.preventDefault();
+            const { isValid, errorMessage } = validateForm('#ClientForm');
+            if (!isValid) {
+                $("#errordiv").html(`<div class="alert alert-danger">${errorMessage}</div>`);
+                return;
+            }
+
+            let formData = {
+                id: clientId || null,
+                clientType: $('#clientType').val(),
+                registrationDate: $('#registrationDate').val(),
+                clientName: $('#clientName').val(),
+                phoneNumber: $('#phoneNumber').val(),
+                secondaryPhone: $('#secondaryPhone').val(),
+                email: $('#email').val(),
+                address1: $('#address1').val(),
+                address2: $('#address2').val(),
+                state: $('#state').val(),
+                city: $('#city').val(),
+                postalCode: $('#postalCode').val(),
+                country: $('#country').val(),
+                clientCategory: $('#clientCategory').val(),
+                clientSource: $('#clientSource').val(),
+                preferredContact: $('#preferredContact').val(),
+                preferredTime: $('#preferredTime').val(),
+                clientRequirements: $('#clientRequirements').val(),
+                clientStatus: $('#clientStatus').val(),
+                priority: $('#priority').val(),
+                clientSince: $('#clientSince').val(),
+                gstNumber: $('#gstNumber').val(),
+                panNumber: $('#panNumber').val(),
+                linkedin: $('#linkedin').val(),
+                facebook: $('#facebook').val(),
+                instagram: $('#instagram').val(),
+                internalNotes: $('#internalNotes').val(),
+                pocDetails: [],
+                serviceDetails: []
+            };
+
+            // Collect POC Details if Key Account
+            if ($('#clientType').val() === 'key-account') {
+                $('#pocContainer .d-flex').each(function () {
+                    formData.pocDetails.push({
+                        name: $(this).find('input[name="pocName[]"]').val(),
+                        designation: $(this).find('input[name="pocDesignation[]"]').val(),
+                        poc: $(this).find('input[name="poc[]"]').val(),
+                        contact: $(this).find('input[name="pocContact[]"]').val()
+                    });
+                });
+            }
+            $('#servicesContainer .d-flex').each(function () {
+                formData.serviceDetails.push({
+                    service: $(this).find('input[name="service[]"]').val(),
+                    serviceDate: $(this).find('input[name="serviceDate[]"]').val()
+                });
+            });
+
+            try {
+                const response = await axios.post('/marketing/saveClient', formData);
+                $("#errordiv").html(`<div class="alert alert-success">${response.data.message}</div>`);
+                setTimeout(() => {
+                    window.location.href = "/marketing/clients";
+                }, 1500);
+            } catch (error) {
+                $("#errordiv").html(`<div class="alert alert-danger">${error.response?.data?.message || "Error saving client data"}</div>`);
+            }
+        });
+
+        // Phone number validation
+        restrictInput("phoneNumber", 10);
+        restrictInput("secondaryPhone", 10);
+    });
+
+</script>

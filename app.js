@@ -10,6 +10,7 @@ const { con } = require("./db");
 const {router:EnT} = require('./routes/EnT')
 const {router:HR} = require('./routes/HR');
 const {router:Mgmt} = require('./routes/Mgmt');
+const {router:Marketing} = require('./routes/Marketing');
 const { authenticateUser } = require("./middleware/authentication");
 
 
@@ -35,6 +36,7 @@ app.use((req, res, next) => {
 app.use("/",EnT);
 app.use("/hr",HR)
 app.use("/management",Mgmt)
+app.use("/marketing",Marketing)
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

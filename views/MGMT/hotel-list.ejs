@@ -12,106 +12,250 @@
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-
     <title>List of Hotels</title>
-
-  <%- include('../header') -%>
-
-          <!-- Content wrapper -->
-          <div class="content-wrapper">
-            <!-- Content -->
-            <div class="container-xxl flex-grow-1 container-p-y">
-              <!-- Basic Bootstrap Table -->
-              <div class="card">
-                <div class="row card-header flex-column flex-md-row pb-4">
-				    <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0">
-				        <h5 class="card-title mb-0 text-md-start text-center">All Hotels</h5>
-				    </div>
-				    <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto mt-0">
-				        <div class="dt-buttons btn-group flex-wrap mb-0"> 
-				
-                            <div class="btn-group">
-                            <input type="search" class="form-control ms-4" id="searchBox" placeholder="Search" aria-controls="DataTables_Table_1">
-                            
-                            <button class="btn buttons-collection btn-label-primary dropdown-toggle me-4" tabindex="0" aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false"><span><span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-export me-sm-1"></i> <span class="d-none d-sm-inline-block">Export</span></span></span></button></div> 
-                            
-                            <button class="btn create-new btn-primary" tabindex="0" onclick=" window.location.href = '/HR/add-employee'" aria-controls="DataTables_Table_0" type="button"><span><span class="d-flex align-items-center gap-2"><i class="icon-base bx bx-plus icon-sm"></i> <span class="d-none d-sm-inline-block">Add Employee</span></span></span></button> 
-                              </div>
-				    </div>
-				</div>
-				
-                <div class="table-responsive text-nowrap">
-                  <table class="table" id="hotelTable">
-                    <thead>
-                      <tr>
-                        <th>Hotel ID</th>
-                        <th>Hotel Name</th>
-                        <th>City</th>
-                        <th>State</th>
-                        <th>Total Rooms</th>
-                        <th>USP</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="hotelTbody" class="table-border-bottom-0">
-                    </tbody>
-                  </table>
-                  <div id="paginationControls"></div>
-                </div>
-              </div>
-              <!--/ Basic Bootstrap Table -->
+    <%- include('../header') -%>
+  </head>
+  <body>
+    <!-- Content wrapper -->
+    <div class="content-wrapper">
+      <!-- Content -->
+      <div class="container-xxl flex-grow-1 container-p-y">
+        <!-- Basic Bootstrap Table -->
+        <div class="card">
+          <div class="row card-header flex-column flex-md-row pb-4">
+            <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0">
+              <h5 class="card-title mb-0 text-md-start text-center">All Hotels</h5>
             </div>
-            <!-- / Content -->
+            <div class="btn-group">
+              <!-- Search by Hotel Name -->
+              <input type="search" class="form-control ms-2" id="nameFilter" placeholder="Search by Hotel Name">
+              <!-- Filter by State -->
+              <select id="stateFilter" class="form-control ms-2">
+                <option value="">Select State</option>
+              </select>
+              <!-- Filter by City -->
+              <select id="cityFilter" class="form-control ms-2">
+                <option value="">Select City</option>
+              </select>
+              <!-- Export Button -->
+              <button id="exportButton" class="btn buttons-collection btn-label-primary dropdown-toggle me-4" type="button" aria-haspopup="dialog" aria-expanded="false">
+                <span>
+                  <span class="d-flex align-items-center gap-2">
+                    <i class="icon-base bx bx-export me-sm-1"></i>
+                    <span class="d-none d-sm-inline-block">Export</span>
+                  </span>
+                </span>
+              </button>
+              <!-- Add Hotel Button -->
+              <button class="btn create-new btn-primary" type="button" onclick="window.location.href = '/management/add-hotel'">
+                <span>
+                  <span class="d-flex align-items-center gap-2">
+                    <i class="icon-base bx bx-plus icon-sm"></i>
+                    <span class="d-none d-sm-inline-block">Hotel</span>
+                  </span>
+                </span>
+              </button>
+            </div>
+          </div>
 
-          <%- include('../footer') -%>
+          <div class="table-responsive text-nowrap">
+            <table class="table" id="hotelTable">
+              <thead>
+                <tr>
+                  <th>Hotel ID</th>
+                  <th>Hotel Name</th>
+                  <th>State</th>
+                  <th>City</th>
+                  <th>Total Rooms</th>
+                  <th>USP</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="hotelTbody" class="table-border-bottom-0">
+              </tbody>
+            </table>
+            <div id="paginationControls"></div>
+          </div>
+        </div>
+        <!--/ Basic Bootstrap Table -->
+      </div>
+      <!-- / Content -->
+    </div>
+    <%- include('../footer') -%>
 
-          <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            axios.get("/management/get-hotels")
-                .then(response => {
-                    const hotels = response.data.hotels;
-                    const tbody = document.getElementById("hotelTbody");
-                    tbody.innerHTML = ""; // Clear existing content
+<script>
+  let stateMap = {}; // Store state codes for quick lookup
+let currentPage = 1;
+const pageSize = 50; // Number of records per page
 
-                    hotels.forEach(hotel => {
-                        const imageUrl = hotel.hotelImage
-                            ? `../MyUploads/${hotel.hotelImage}`
-                            : "../images/placeholder-hotel.png"; // Default placeholder
+document.addEventListener("DOMContentLoaded", async function () {
+    await loadState("stateFilter"); // Preload states
+    loadHotels(currentPage); // Fetch hotels with pagination
 
-                        // Create table row
-                        const row = `
-                            <tr data-hotel-id="${hotel.id}">
-                                <td>${hotel.id}</td>
-                                <td>
-                                    <img width="30" src="${imageUrl}" alt="" class="rounded-circle" />
-                                    ${hotel.hotelName}
-                                </td>
-                                <td>${hotel.city}</td>
-                                <td>${hotel.state}</td>
-                                <td>${hotel.totalRooms}</td>
-                                <td>${hotel.usp || "N/A"}</td>
-                                <td>${hotel.status ? "Active" : "Inactive"}</td>
-                                <td>
-                                    <button id="editHotel" class="btn btn-icon item-edit">
-                                        <i class="icon-base bx bx-edit icon-sm"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
+    document.getElementById("stateFilter").addEventListener("change", function () {
+        loadCity(this.value, "cityFilter");
+        filterHotels();
+    });
 
-                        tbody.innerHTML += row;
-                    });
+    document.getElementById("cityFilter").addEventListener("change", filterHotels);
+    document.getElementById("nameFilter").addEventListener("input", filterHotels);
 
-                    pagi_search('#searchBox', '#hotelTable', '#paginationControls');
-                })
-                .catch(error => {
-                    console.error("Error fetching hotel data:", error);
-                });
+    // Event delegation for edit buttons
+    $('#hotelTable').on('click', '.editHotel', function () {
+        const id = $(this).closest('tr').data('hotel-id');
+        window.location.href = `/management/add-hotel?id=${id}`;
+    });
 
-            $('#hotelTable').on('click', '#editHotel', function() {
-                const id = $(this).closest('tr').data('hotel-id');
-                window.location.href = `/hotel/add-hotel?id=${id}`;
-            });
+    // Pagination buttons
+    document.getElementById("nextPage").addEventListener("click", function () {
+        currentPage++;
+        loadHotels(currentPage);
+    });
+
+    document.getElementById("prevPage").addEventListener("click", function () {
+        if (currentPage > 1) {
+            currentPage--;
+            loadHotels(currentPage);
+        }
+    });
+});
+
+// Fetch states and store them in stateMap
+async function loadState(selectId) {
+    try {
+        const response = await fetch('/getStates');
+        const states = await response.json();
+        const dropdown = document.getElementById(selectId);
+        dropdown.innerHTML = '<option value="">Select State</option>';
+
+        states.forEach(state => {
+            stateMap[state.stateCode] = state.stateName; // Store in stateMap
+            const option = document.createElement('option');
+            option.value = state.stateCode;
+            option.textContent = state.stateName;
+            dropdown.appendChild(option);
         });
-          </script>
+    } catch (error) {
+        console.error('Error fetching states:', error);
+    }
+}
+
+// Fetch cities for a selected state
+async function loadCity(stateCode, cityDropdownId) {
+    try {
+        const response = await fetch('/cities');
+        const cities = await response.json();
+        const cityDropdown = document.getElementById(cityDropdownId);
+        cityDropdown.innerHTML = '<option value="">Select City</option>'; // Reset dropdown
+
+        const filteredCities = cities.filter(city => city.stateCode === stateCode);
+        filteredCities.forEach(city => {
+            const option = document.createElement('option');
+            option.value = city.cityName;
+            option.textContent = city.cityName;
+            cityDropdown.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error fetching cities:', error);
+    }
+}
+
+// Fetch paginated hotels
+async function loadHotels(page) {
+    try {
+        const response = await axios.get(`/management/get-hotels?page=${page}&limit=${pageSize}`);
+        const { hotels, totalHotels, totalPages } = response.data;
+        const tbody = document.getElementById("hotelTbody");
+        tbody.innerHTML = ""; // Clear existing content
+
+        const fragment = document.createDocumentFragment(); // Use batch rendering
+
+        hotels.forEach(hotel => {
+            const imageUrl = hotel.hotelImage
+                ? `../MyUploads/${hotel.hotelImage}`
+                : "../images/placeholder-hotel.png"; // Default placeholder
+
+            const row = document.createElement("tr");
+            row.dataset.hotelId = hotel.id;
+            row.dataset.state = hotel.state;
+            row.dataset.city = hotel.city;
+            row.dataset.name = hotel.hotelName.toLowerCase();
+
+            row.innerHTML = `
+                <td>${hotel.id}</td>
+                <td>
+                    <img width="30" src="${imageUrl}" alt="" class="rounded-circle" />
+                    ${hotel.hotelName}
+                </td>
+                <td>${stateMap[hotel.state] || "Unknown"}</td> 
+                <td>${hotel.city}</td>
+                <td>${hotel.totalRooms}</td>
+                <td>${hotel.usp || "N/A"}</td>
+                <td>${hotel.status ? "Active" : "Inactive"}</td>
+                <td>
+                    <button class="btn btn-icon item-edit editHotel">
+                        <i class="icon-base bx bx-edit icon-sm"></i>
+                    </button>
+                </td>
+            `;
+
+            fragment.appendChild(row);
+        });
+
+        tbody.appendChild(fragment); // Efficient rendering
+        updatePaginationControls(totalHotels, totalPages);
+    } catch (error) {
+        console.error("Error fetching hotel data:", error);
+    }
+}
+
+// Update pagination buttons dynamically
+function updatePaginationControls(totalHotels, totalPages) {
+    const paginationDiv = document.getElementById("paginationControls");
+    paginationDiv.innerHTML = ""; // Clear existing buttons
+
+    const prevBtn = `<button id="prevPage" ${currentPage === 1 ? "disabled" : ""}>Prev</button>`;
+    const nextBtn = `<button id="nextPage" ${currentPage >= totalPages ? "disabled" : ""}>Next</button>`;
+    
+    paginationDiv.innerHTML = prevBtn + ` Page ${currentPage} of ${totalPages} ` + nextBtn;
+
+    document.getElementById("prevPage").addEventListener("click", function () {
+        if (currentPage > 1) {
+            currentPage--;
+            loadHotels(currentPage);
+        }
+    });
+
+    document.getElementById("nextPage").addEventListener("click", function () {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadHotels(currentPage);
+        }
+    });
+}
+
+
+// Filter hotels dynamically without reloading
+function filterHotels() {
+    const state = document.getElementById("stateFilter").value;
+    const city = document.getElementById("cityFilter").value;
+    const name = document.getElementById("nameFilter").value.toLowerCase();
+
+    document.querySelectorAll("#hotelTable tbody tr").forEach(row => {
+        const hotelState = row.dataset.state;
+        const hotelCity = row.dataset.city;
+        const hotelName = row.dataset.name;
+
+        let show = true;
+        if (state && hotelState !== state) show = false;
+        if (city && hotelCity !== city) show = false;
+        if (name && !hotelName.includes(name)) show = false;
+
+        row.style.display = show ? "" : "none";
+    });
+}
+
+</script>
+  </body>
+</html>

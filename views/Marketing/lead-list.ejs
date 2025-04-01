@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>List of Leads</title>
+  <%- include('../header') -%>
+</head>
+
+<body>
+  <div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+      <div class="card">
+        <div class="row card-header flex-column flex-md-row pb-4">
+          <div class="d-md-flex justify-content-between align-items-center col-md-auto me-auto mt-0">
+            <h5 class="card-title mb-0 text-md-start text-center">All Leads</h5>
+          </div>
+          <div class="btn-group">
+            <!-- Filter Inputs -->
+            <input type="search" class="form-control ms-2" id="eventTypeFilter" placeholder="Search by Event Type">
+            <input type="search" class="form-control ms-2" id="clientIdFilter" placeholder="Search by Client ID">
+            <select id="stateFilter" class="form-control ms-2">
+              <option value="">Select State</option>
+            </select>
+            <select id="cityFilter" class="form-control ms-2">
+              <option value="">Select City</option>
+            </select>
+            <select id="leadStatusFilter" class="form-control ms-2">
+              <option value="">Select Lead Status</option>
+              <option value="new">New</option>
+              <option value="in_progress">In Progress</option>
+              <option value="follow_up">Follow-Up</option>
+              <option value="closed_won">Closed Won</option>
+              <option value="closed_lost">Closed Lost</option>
+            </select>
+            <select id="priorityFilter" name="priorityFilter" class="form-control ms-2">
+              <option value="">Select Priority</option>
+              <option value="vip">VIP</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+              <option value="urgent">Urgent</option>
+            </select>
+            <button id="exportButton" class="btn btn-label-primary">Export</button>
+            <!-- <button class="btn create-new btn-primary" type="button" onclick="window.location.href = '/marketing/add-lead'">+</button> -->
+          </div>
+        </div>
+        <div class="table-responsive text-nowrap">
+          <table class="table" id="leadsTable">
+            <thead>
+              <tr>
+                <th>Lead ID</th>
+                <th>Client ID</th>
+                <th>Track</th>
+                <th>Event Type</th>
+                <th>State</th>
+                <th>City</th>
+                <th>Venue</th>
+                <th>Event Date</th>
+                <th>Lead Source</th>
+                <th>Lead Status</th>
+                <th>Priority</th>
+                <th>Next Follow-up</th>
+                <th>Created By</th>
+             
+              </tr>
+            </thead>
+            <tbody id="leadsTbody" class="table-border-bottom-0"></tbody>
+          </table>
+          <div id="paginationControls"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <%- include('../footer') -%>
+
+  <script>
+    let stateMap = {};
+    let currentPage = 1;
+    const pageSize = 50;
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      await loadState("stateFilter");
+      loadLeads(currentPage);
+
+      // Filter event listeners
+      document.getElementById("stateFilter").addEventListener("change", function () {
+        loadCity(this, "cityFilter");
+        filterLeads();
+      });
+      document.getElementById("cityFilter").addEventListener("change", filterLeads);
+      document.getElementById("eventTypeFilter").addEventListener("input", filterLeads);
+      document.getElementById("clientIdFilter").addEventListener("input", filterLeads);
+      document.getElementById("leadStatusFilter").addEventListener("change", filterLeads);
+      document.getElementById("priorityFilter").addEventListener("change", filterLeads);
+    });
+
+    async function loadState(selectId) {
+      try {
+        const response = await fetch('/getStates');
+        const states = await response.json();
+        const dropdown = document.getElementById(selectId);
+        dropdown.innerHTML = '<option value="">Select State</option>';
+        states.forEach(state => {
+          stateMap[state.stateCode] = state.stateName;
+          const option = document.createElement('option');
+          option.value = state.stateCode;
+          option.textContent = state.stateName;
+          dropdown.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error fetching states:', error);
+      }
+    }
+
+    async function loadLeads(page) {
+      try {
+        const response = await axios.get(`/marketing/getAllLeads?page=${page}&limit=${pageSize}`);
+        const { leads, totalLeads, totalPages } = response.data;
+
+        const tbody = document.getElementById("leadsTbody");
+        tbody.innerHTML = "";
+
+        leads.forEach(lead => {
+          const row = document.createElement("tr");
+          row.dataset.leadId = lead.id;
+          row.dataset.clientId = lead.client_id;
+          row.dataset.eventType = lead.event_type.toLowerCase();
+          row.dataset.state = lead.state.toLowerCase();
+          row.dataset.city = lead.city.toLowerCase();
+          row.dataset.leadStatus = lead.lead_status.toLowerCase();
+          row.dataset.priority = lead.priority.toLowerCase();
+
+          row.innerHTML = `
+            <td>${lead.id}</td>
+            <td>${lead.client_id}</td>
+              <td>
+    <button type="button" class="btn btn-primary p-2" onclick="trackLead(${lead.id})">
+        <i class="bx bx-map"></i> 
+    </button>
+</td>
+            <td>${lead.event_type.charAt(0).toUpperCase() + lead.event_type.slice(1)}</td>
+            <td>${stateMap[lead.state] || "Unknown"}</td>
+            <td>${lead.city || 'N/A'}</td>
+            <td>${lead.venue}</td>
+            <td>${lead.event_date}</td>
+            <td>${lead.lead_source.charAt(0).toUpperCase() + lead.lead_source.slice(1)}</td>
+            <td>
+              <select class="form-control lead-status-dropdown" data-lead-id="${lead.id}">
+                <option value="new" ${lead.lead_status === "new" ? "selected" : ""}>New</option>
+                <option value="in_progress" ${lead.lead_status === "in_progress" ? "selected" : ""}>In Progress</option>
+                <option value="follow_up" ${lead.lead_status === "follow_up" ? "selected" : ""}>Follow-Up</option>
+                <option value="closed_won" ${lead.lead_status === "closed_won" ? "selected" : ""}>Closed Won</option>
+                <option value="closed_lost" ${lead.lead_status === "closed_lost" ? "selected" : ""}>Closed Lost</option>
+              </select>
+            </td>
+            <td>
+              <select class="form-control lead-priority-dropdown" data-lead-id="${lead.id}">
+                <option value="vip" ${lead.priority === "vip" ? "selected" : ""}>VIP</option>
+                <option value="high" ${lead.priority === "high" ? "selected" : ""}>High</option>
+                <option value="medium" ${lead.priority === "medium" ? "selected" : ""}>Medium</option>
+                <option value="low" ${lead.priority === "low" ? "selected" : ""}>Low</option>
+                <option value="urgent" ${lead.priority === "urgent" ? "selected" : ""}>Urgent</option>
+              </select>
+            </td>
+            <td>${lead.next_followup ? new Date(lead.next_followup).toLocaleString() : 'N/A'}</td>
+            <td>${lead.createdBy}</td>
+           
+          `;
+          tbody.appendChild(row);
+        });
+
+        updatePaginationControls(totalLeads, totalPages);
+      } catch (error) {
+        console.error("Error fetching leads data:", error);
+      }
+    }
+   
+    function trackLead(id){
+            window.location.href=`/marketing/track-lead?id=${id}`
+        }
+    function updatePaginationControls(totalLeads, totalPages) {
+      const paginationDiv = document.getElementById("paginationControls");
+      paginationDiv.innerHTML = `
+        <button id="prevPage" ${currentPage === 1 ? "disabled" : ""}>Prev</button>
+        Page ${currentPage} of ${totalPages}
+        <button id="nextPage" ${currentPage >= totalPages ? "disabled" : ""}>Next</button>
+      `;
+
+      setTimeout(() => {
+        document.getElementById("prevPage")?.addEventListener("click", function () {
+          if (currentPage > 1) {
+            currentPage--;
+            loadLeads(currentPage);
+          }
+        });
+        document.getElementById("nextPage")?.addEventListener("click", function () {
+          if (currentPage < totalPages) {
+            currentPage++;
+            loadLeads(currentPage);
+          }
+        });
+      }, 100);
+    }
+
+    function filterLeads() {
+      const eventType = document.getElementById("eventTypeFilter").value.toLowerCase();
+      const clientId = document.getElementById("clientIdFilter").value.toLowerCase();
+      const state = document.getElementById("stateFilter").value.toLowerCase();
+      const city = document.getElementById("cityFilter").value.toLowerCase();
+      const leadStatus = document.getElementById("leadStatusFilter").value.toLowerCase();
+      const priority = document.getElementById("priorityFilter").value.toLowerCase();
+
+      document.querySelectorAll("#leadsTable tbody tr").forEach(row => {
+        const rowEventType = row.dataset.eventType || "";
+        const rowClientId = row.dataset.clientId || "";
+        const rowState = row.dataset.state || "";
+        const rowCity = row.dataset.city || "";
+        const rowLeadStatus = row.dataset.leadStatus || "";
+        const rowPriority = row.dataset.priority || "";
+
+        let show = true;
+        if (eventType && !rowEventType.includes(eventType)) show = false;
+        if (clientId && rowClientId !== clientId) show = false;
+        if (state && rowState !== state) show = false;
+        if (city && rowCity !== city) show = false;
+        if (leadStatus && rowLeadStatus !== leadStatus) show = false;
+        if (priority && rowPriority !== priority) show = false;
+
+        row.style.display = show ? "" : "none";
+      });
+    }
+
+    // Update Lead Status and Priority via API calls
+    document.addEventListener("change", async function (event) {
+      if (event.target.classList.contains("lead-status-dropdown")) {
+        const leadId = event.target.dataset.leadId;
+        const newStatus = event.target.value;
+
+        try {
+          const response = await axios.put(`/marketing/update-lead-status/${leadId}`, { lead_status: newStatus });
+          if (response.status === 200) {
+            alert("Lead status updated successfully!");
+          }
+        } catch (error) {
+          console.error("Error updating lead status:", error);
+          alert("An error occurred while updating the lead status.");
+        }
+      }
+
+      if (event.target.classList.contains("lead-priority-dropdown")) {
+        const leadId = event.target.dataset.leadId;
+        const newPriority = event.target.value;
+
+        try {
+          const response = await axios.put(`/marketing/update-lead-priority/${leadId}`, { priority: newPriority });
+          if (response.status === 200) {
+            alert("Lead priority updated successfully!");
+          }
+        } catch (error) {
+          console.error("Error updating lead priority:", error);
+          alert("An error occurred while updating the lead priority.");
+        }
+      }
+    });
+  
+  </script>
+</body>
+
+</html>

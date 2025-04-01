@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>List of Clients</title>
+    <%- include('../header') -%>
+</head>
+
+<body>
+    <div class="content-wrapper">
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="card">
+                <div class="row card-header flex-column flex-md-row pb-4">
+                    <div class="d-md-flex justify-content-between align-items-center col-md-auto me-auto mt-0">
+                        <h5 class="card-title mb-0 text-md-start text-center">All Clients</h5>
+                    </div>
+                    <div class="btn-group">
+                        <input type="search" class="form-control ms-2" id="nameFilter"
+                            placeholder="Search by Client Name">
+                        <select id="stateFilter" class="form-control ms-2">
+                            <option value="">Select State</option>
+                        </select>
+                        <select id="cityFilter" class="form-control ms-2">
+                            <option value="">Select City</option>
+                        </select>
+                        <select id="statusFilter" class="form-control ms-2">
+                            <option value="">Select Status</option>
+                            <option value="prospect">Prospect</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="blacklisted">Blacklisted</option>
+                        </select>
+
+                        <select id="priorityFilter" name="priorityFilter" class="form-control ms-2">
+                            <option value="">Select Priority</option>
+                            <option value="vip">VIP</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+
+                        <select id="clientTypeFilter" class="form-control ms-2">
+                            <option value="">Client Type</option>
+                            <option value="individual">Individual</option>
+                            <option value="corporate">Corporate</option>
+                            <option value="key-account">Key Account</option>
+                        </select>
+
+                        <button id="exportButton" class="btn btn-label-primary">Export</button>
+                        <button class="btn create-new btn-primary" type="button"
+                            onclick="window.location.href = '/marketing/add-client'">+</button>
+                    </div>
+                </div>
+                <div class="table-responsive text-nowrap">
+                    <table class="table" id="clientsTable">
+                        <thead>
+                            <tr>
+                                <th>Client ID</th>
+                                <th>Track</th>
+                                <th>Reg. Date</th>
+                                <th>Client Name</th>
+                                <th>Type</th>
+                                <th>State</th>
+                                <th>City</th>
+                                <th>Contact</th>
+                                <th style="min-width: 132px;">Status</th>
+                                <th style="min-width: 132px;">Priority</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="clientsTbody" class="table-border-bottom-0"></tbody>
+                    </table>
+                    <div id="paginationControls"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <%- include('../footer') -%>
+
+    <script>
+        let stateMap = {};
+        let currentPage = 1;
+        const pageSize = 50;
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            await loadState("stateFilter");
+            loadClients(currentPage);
+
+            document.getElementById("stateFilter").addEventListener("change", function () {
+                loadCity(this, "cityFilter");
+                filterClients();
+            });
+            document.getElementById("cityFilter").addEventListener("change", filterClients);
+            document.getElementById("nameFilter").addEventListener("input", filterClients);
+            document.getElementById("statusFilter").addEventListener("change", filterClients);
+            document.getElementById("priorityFilter").addEventListener("change", filterClients);
+            document.getElementById("clientTypeFilter").addEventListener("change", filterClients);
+        });
+
+        async function loadState(selectId) {
+            try {
+                const response = await fetch('/getStates');
+                const states = await response.json();
+                const dropdown = document.getElementById(selectId);
+                dropdown.innerHTML = '<option value="">Select State</option>';
+                states.forEach(state => {
+                    stateMap[state.stateCode] = state.stateName;
+                    const option = document.createElement('option');
+                    option.value = state.stateCode;
+                    option.textContent = state.stateName;
+                    dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching states:', error);
+            }
+        }
+
+        async function loadClients(page) {
+            try {
+                const response = await axios.get(`/marketing/get-clients?page=${page}&limit=${pageSize}`);
+                const { clients, totalClients, totalPages } = response.data;
+                
+                const tbody = document.getElementById("clientsTbody");
+                tbody.innerHTML = "";
+                
+                clients.forEach(client => {
+                    const row = document.createElement("tr");
+                    row.dataset.clientId = client.id;
+                    row.dataset.state = client.state;
+                    row.dataset.city = client.city;
+                    row.dataset.clientName = client.clientName.toLowerCase();
+                    row.dataset.clientStatus = client.clientStatus.toLowerCase();
+                    row.dataset.priority = client.priority.toLowerCase();
+                    row.dataset.clientType = client.clientType.toLowerCase();
+
+                    row.innerHTML = `
+                        <td>${client.id}</td>
+                        <td>
+    <button type="button" class="btn btn-primary p-2" onclick="trackClient(${client.id})">
+        <i class="bx bx-map"></i> 
+    </button>
+</td>
+                        <td>${client.registrationDate}</td>
+                        <td>${client.clientName}</td>
+                        <td>${client.clientType.charAt(0).toUpperCase() + client.clientType.slice(1)}</td>
+                        <td>${stateMap[client.state] || "Unknown"}</td>
+                        <td>${client.city || 'N/A'}</td>
+                        <td>${client.phoneNumber}<br>${client.email}</td>
+                        
+                        <!-- Client Status Dropdown -->
+                        <td>
+                            <select class="form-control client-status-dropdown" data-client-id="${client.id}">
+                                <option value="prospect" ${client.clientStatus === "prospect" ? "selected" : ""}>Prospect</option>
+                                <option value="active" ${client.clientStatus === "active" ? "selected" : ""}>Active</option>
+                                <option value="inactive" ${client.clientStatus === "inactive" ? "selected" : ""}>Inactive</option>
+                                <option value="blacklisted" ${client.clientStatus === "blacklisted" ? "selected" : ""}>Blacklisted</option>
+                            </select>
+                        </td>
+
+                        <!-- Priority Dropdown -->
+                        <td>
+                            <select class="form-control client-priority-dropdown" data-client-id="${client.id}">
+                                <option value="vip" ${client.priority === "vip" ? "selected" : ""}>VIP</option>
+                                <option value="high" ${client.priority === "high" ? "selected" : ""}>High</option>
+                                <option value="medium" ${client.priority === "medium" ? "selected" : ""}>Medium</option>
+                                <option value="low" ${client.priority === "low" ? "selected" : ""}>Low</option>
+                            </select>
+                        </td>
+
+                        <td>${client.clientCategory.charAt(0).toUpperCase() + client.clientCategory.slice(1)}</td>
+
+                        <td>
+    <a class="btn p-0" href="/marketing/add-client?id=${client.id}">
+        <i class="bx bx-edit-alt me-1"></i>
+    </a>
+</td>
+
+
+
+
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                updatePaginationControls(totalClients, totalPages);
+            } catch (error) {
+                console.error("Error fetching clients data:", error);
+            }
+        }
+        function trackClient(id){
+            window.location.href=`/marketing/track-client?id=${id}`
+        }
+        function updatePaginationControls(totalClients, totalPages) {
+            const paginationDiv = document.getElementById("paginationControls");
+            paginationDiv.innerHTML = `
+                <button id="prevPage" ${currentPage === 1 ? "disabled" : ""}>Prev</button>
+                Page ${currentPage} of ${totalPages}
+                <button id="nextPage" ${currentPage >= totalPages ? "disabled" : ""}>Next</button>
+            `;
+
+            setTimeout(() => {
+                document.getElementById("prevPage")?.addEventListener("click", function () {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        loadClients(currentPage);
+                    }
+                });
+
+                document.getElementById("nextPage")?.addEventListener("click", function () {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        loadClients(currentPage);
+                    }
+                });
+            }, 100);
+        }
+
+        function filterClients() {
+            const state = document.getElementById("stateFilter").value.toLowerCase();
+            const city = document.getElementById("cityFilter").value.toLowerCase();
+            const name = document.getElementById("nameFilter").value.toLowerCase();
+            const status = document.getElementById("statusFilter").value.toLowerCase();
+            const priority = document.getElementById("priorityFilter").value.toLowerCase();
+            const clientType = document.getElementById("clientTypeFilter").value.toLowerCase();
+
+            document.querySelectorAll("#clientsTable tbody tr").forEach(row => {
+                const rowState = row.dataset.state?.toLowerCase() || "";
+                const rowCity = row.dataset.city?.toLowerCase() || "";
+                const clientName = row.dataset.clientName?.toLowerCase() || "";
+                const clientStatus = row.dataset.clientStatus?.toLowerCase() || "";
+                const clientPriority = row.dataset.priority?.toLowerCase() || "";
+                const rowClientType = row.dataset.clientType?.toLowerCase() || "";
+
+                let show = true;
+                if (state && rowState !== state) show = false;
+                if (city && rowCity !== city) show = false;
+                if (name && !clientName.includes(name)) show = false;
+                if (status && clientStatus !== status) show = false;
+                if (priority && clientPriority !== priority) show = false;
+                if (clientType && rowClientType !== clientType) show = false;
+
+                row.style.display = show ? "" : "none";
+            });
+        }
+
+        document.addEventListener("change", async function (event) {
+            if (event.target.classList.contains("client-status-dropdown")) {
+                const clientId = event.target.dataset.clientId;
+                const newStatus = event.target.value;
+
+                try {
+                    const response = await axios.put(`/marketing/update-client-status/${clientId}`, { clientStatus: newStatus });
+                    if (response.status === 200) {
+                        alert("Client status updated successfully!");
+                    }
+                } catch (error) {
+                    console.error("Error updating status:", error);
+                    alert("An error occurred while updating the client status.");
+                }
+            }
+
+            if (event.target.classList.contains("client-priority-dropdown")) {
+                const clientId = event.target.dataset.clientId;
+                const newPriority = event.target.value;
+
+                try {
+                    const response = await axios.put(`/marketing/update-client-priority/${clientId}`, { priority: newPriority });
+                    if (response.status === 200) {
+                        alert("Client priority updated successfully!");
+                    }
+                } catch (error) {
+                    console.error("Error updating priority:", error);
+                    alert("An error occurred while updating the client priority.");
+                }
+            }
+        });
+    </script>
+</body>
+</html>

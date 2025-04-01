@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+    content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+<title>Basic Company Registration</title>
+<%- include('../header') -%>
+</head>
+
+<body>
+
+<div class="content-wrapper">
+    <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="row ">
+            <div class="col-md-12">
+                <div class="card">
+                    <h5 class="card-header">Basic Company Details</h5>
+                    <div class="card-body">
+                        <form id="BasicCompanyForm">
+                            <div class="row g-3">
+
+                                <!-- Company Name -->
+                                <div class="col-md-12">
+                                    <label class="form-label">Company Name*</label>
+                                    <input type="text" id="companyName" name="companyName" 
+                                        class="form-control" required>
+                                </div>
+
+                                <!-- Registration Number -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Registration Number*</label>
+                                    <input type="text" id="regNumber" name="regNumber" 
+                                        class="form-control" required>
+                                </div>
+
+                                <!-- Contact Details -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Mobile Number*</label>
+                                    <input type="tel" id="mobile" name="mobile" 
+                                        class="form-control" maxlength="10" required>
+                                </div>
+
+                                <!-- Email -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Email*</label>
+                                    <input type="email" id="email" name="email" 
+                                        class="form-control" required>
+                                </div>
+
+                                <!-- GST Number -->
+                                <div class="col-md-6">
+                                    <label class="form-label">GST Number*</label>
+                                    <div id="gstContainer">
+                                        <div class="input-group">
+                                            <input type="text" name="gstNumber" 
+                                                class="form-control" required>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Address -->
+                                <div class="col-md-12">
+                                    <label class="form-label">Registered Address*</label>
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <input type="text" name="address" 
+                                                class="form-control mb-2" placeholder="address" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <!-- <label class="input__label">State*</label> -->
+                                            <select name="state" id="state" onchange="loadCity(this,'city')"
+                                                class="form-control" required>
+                                                <option value="">Select</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <!-- <label class="input__label">City</label> -->
+                                            <select name="city" id="city" class="form-control">
+                                                <option value="">Select City</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <input type="text" name="zipCode" 
+                                                class="form-control" placeholder="ZIP Code" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Status*</label>
+                                    <select class="form-select" name="status" required>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                    </select>
+                                </div>
+
+                                <!-- Registration Date -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Registration Date*</label>
+                                    <input type="date" id="regDate" name="regDate" 
+                                        class="form-control" required>
+                                </div>
+
+                                <div class="col-md-12  mt-4">
+                                    <button type="submit" class="btn btn-primary px-5">Submit</button>
+                                    <button type="reset" class="btn btn-outline-secondary px-5">Reset</button>
+                                    <button type="cancel" class="btn btn-outline-secondary px-5">Back</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('../footer') -%>
+
+<script>
+    $(document).ready(async function () {
+        // Load initial state
+        await loadState("state");
+        restrictInput("mobile", 10);
+        
+        // Set default registration date
+        document.getElementById("regDate").value = new Date().toISOString().split('T')[0];
+
+        // Check for edit mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const companyId = urlParams.get('id');
+
+        if (companyId) {
+            try {
+                const response = await axios.get(`/getCompanyDetails/${companyId}`);
+                if (response.data.success) {
+                    const company = response.data.data;
+
+                    // Populate form fields
+                    $('#companyName').val(company.companyName);
+                    $('#regNumber').val(company.regNumber);
+                    $('#mobile').val(company.mobile);
+                    $('#email').val(company.email);
+                    $('[name="gstNumber"]').val(company.gstNumber);
+                    $('[name="address"]').val(company.address);
+                    $('[name="zipCode"]').val(company.zipCode);
+                    $('[name="status"]').val(company.status);
+                    $('#regDate').val(company.regDate);
+
+                    // Load state and city
+                    await loadState("state", company.state);
+                    $("#state").trigger("change");
+                    
+                    setTimeout(() => {
+                        $("#city").val(company.city).trigger("change");
+                    }, 500);
+                }
+            } catch (error) {
+                console.error("Error fetching company data:", error);
+                alert("Error loading company details");
+            }
+        }
+
+        // Form Submission Handler
+        $('#BasicCompanyForm').submit(async function (event) {
+            event.preventDefault();
+            
+            // Basic validation
+            const requiredFields = $('#BasicCompanyForm [required]');
+            let isValid = true;
+            
+            requiredFields.each(function() {
+                if(!$(this).val()) {
+                    isValid = false;
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            if(!isValid) {
+                alert("Please fill all required fields");
+                return;
+            }
+
+            // Prepare form data
+            const formData = {
+                id: companyId || null,
+                companyName: $('#companyName').val(),
+                regNumber: $('#regNumber').val(),
+                mobile: $('#mobile').val(),
+                email: $('#email').val(),
+                gstNumber: $('[name="gstNumber"]').val(),
+                address: $('[name="address"]').val(),
+                state: $('#state').val(),
+                city: $('#city').val(),
+                zipCode: $('[name="zipCode"]').val(),
+                status: $('[name="status"]').val(),
+                regDate: $('#regDate').val()
+            };
+
+            try {
+                const response = await axios.post('/saveCompany', formData);
+                alert(response.data.message);
+                window.location.href = "/companies";
+            } catch (error) {
+                console.error("Submission error:", error);
+                alert(error.response?.data?.message || "Error saving company data");
+            }
+        });
+
+        // Back button handler
+        $('[type="cancel"]').click(function(e) {
+            e.preventDefault();
+            window.location.href = "/companies";
+        });
+    });
+
+    // Input restriction function
+    function restrictInput(elementId, maxLength) {
+        $(`#${elementId}`).on('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '').slice(0, maxLength);
+        });
+    }
+</script>
+
+</body>
+</html>

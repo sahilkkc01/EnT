@@ -26,22 +26,124 @@ const UserTokens = sequelize.define(
 );
 // UserTokens.sync()
 const Department = sequelize.define(
-    "Department",
-    {
-      app_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      name: {
-        type: DataTypes.STRING,
-        allowNull: false,
+  "Department",
+  {
+    app_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    timestamps: true,
+    alter: true,
+    tableName: "department",
+  }
+);
+const TransportType = sequelize.define(
+  "TransportType",
+  {
+    app_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    timestamps: true,
+    alter: true,
+    tableName: "transporttype",
+  }
+);
+const VendorType = sequelize.define(
+  "VendorType",
+  {
+    app_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+  },
+  {
+    timestamps: true,
+    alter: true,
+    tableName: "vendortype",
+  }
+);
+
+const Company = sequelize.define(
+  "Company",
+  {
+    app_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    companyName: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    regNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    mobile: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      validate: {
+        isNumeric: true,
+        len: [10, 10],
       },
     },
-    {
-      timestamps: true,
-      alter: true,
-      tableName: "department",
-    }
-  );
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    gstNumber: {
+      type: DataTypes.STRING, // Storing as a comma-separated string
+      allowNull: true,
+    },
+    address: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    state: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    zipCode: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM("Active", "Inactive"),
+      allowNull: false,
+      defaultValue: "Active",
+    },
+    regDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+  },
+  {
+    timestamps: true,
+    tableName: "companies",
+  }
+);
+// Company.sync()
+// VendorType.sync()
+// TransportType.sync()
 // Department.sync()
-module.exports={Department,UserTokens}
+module.exports = { Department, UserTokens ,TransportType,VendorType,Company}

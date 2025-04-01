@@ -2434,16 +2434,112 @@
     "cityName": "Diglipur",
     "stateCode": "AN"
   },
-  {
-    "id": 1943,
-    "cityName": "New Delhi",
-    "stateCode": "DL"
-  },
-  {
-    "id": 1944,
-    "cityName": "Delhi",
-    "stateCode": "DL"
-  },
+  
+    {
+      "id": 1943,
+      "cityName": "New Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1944,
+      "cityName": "Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1945,
+      "cityName": "Central Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1946,
+      "cityName": "East Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1947,
+      "cityName": "North Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1948,
+      "cityName": "South Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1949,
+      "cityName": "West Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1950,
+      "cityName": "North East Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1951,
+      "cityName": "South East Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1952,
+      "cityName": "South West Delhi",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1953,
+      "cityName": "Shahdara",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1954,
+      "cityName": "Dwarka",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1955,
+      "cityName": "Rohini",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1956,
+      "cityName": "Pitampura",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1957,
+      "cityName": "Janakpuri",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1958,
+      "cityName": "Saket",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1959,
+      "cityName": "Lajpat Nagar",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1960,
+      "cityName": "Karol Bagh",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1961,
+      "cityName": "Narela",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1962,
+      "cityName": "Vasant Kunj",
+      "stateCode": "DL"
+    },
+    {
+      "id": 1963,
+      "cityName": "Greater Kailash",
+      "stateCode": "DL"
+    },  
   {
     "id": 1945,
     "cityName": "Chandigarh",

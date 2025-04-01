@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proforma Invoice</title>
+    <%- include('../header') -%>
+    <style>
+        .invoice-header {
+            border-bottom: 2px solid #eee;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+        
+        .details-section {
+            margin-bottom: 2rem;
+        }
+        
+        .vendor-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+        
+        .vendor-table th,
+        .vendor-table td {
+            border: 1px solid #dee2e6;
+            padding: 0.75rem;
+            vertical-align: top;
+        }
+        
+        .total-section {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .invoice-footer {
+            margin-top: 3rem;
+            border-top: 2px solid #eee;
+            padding-top: 1rem;
+        }
+        
+        .table-header {
+            background-color: #f8f9fa !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <!-- Invoice Header -->
+            <div class="invoice-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h2 class="mb-0">PROFORMA INVOICE</h2>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <p class="mb-0">Date: <span id="invoiceDate"></span></p>
+                        <p class="mb-0">Invoice #: <span id="invoiceNumber"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client and Sender Details -->
+            <div class="row details-section">
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Client Details</h5>
+                            <p id="clientName" class="mb-1"></p>
+                            <p id="clientAddress" class="mb-1"></p>
+                            <p id="clientCityState" class="mb-1"></p>
+                            <p class="mb-1">Phone: <span id="clientPhone"></span></p>
+                            <p class="mb-0">Email: <span id="clientEmail"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>Sender Details</h5>
+                            <p class="mb-1">Event Masters Pvt. Ltd.</p>
+                            <p class="mb-1">123 Event Street,</p>
+                            <p class="mb-1">Mumbai, Maharashtra - 400001</p>
+                            <p class="mb-1">Phone: (022) 1234-5678</p>
+                            <p class="mb-0">Email: info@eventmasters.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lead Details -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Event Details</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <p class="mb-1">Event Type: <span id="eventType"></span></p>
+                            <p class="mb-0">Event Date: <span id="eventDate"></span></p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1">Venue: <span id="venue"></span></p>
+                            <p class="mb-0">Participants: <span id="peopleCount"></span></p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1">Lead Source: <span id="leadSource"></span></p>
+                            <p class="mb-0">Priority: <span id="leadPriority"></span></p>
+                        </div>
+                        <div class="col-md-3">
+                            <p class="mb-1">Event Days: <span id="eventDays">3 Days</span></p>
+                            <p class="mb-0">Total Nights: <span id="totalNights">2 Nights</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendor Selection -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Vendor Services</h5>
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-8">
+                            <select class="form-select" id="vendorSelect">
+                                <option value="">Select Vendor Service</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" onclick="addVendor()">Add Service</button>
+                        </div>
+                    </div>
+
+                    <table class="vendor-table">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Service Provider</th>
+                                <th>Description</th>
+                                <th>Qty</th>
+                                <th>Rate (₹)</th>
+                                <th>Total (₹)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vendorTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Hotel Selection -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Accommodation Details</h5>
+                    <div class="row mb-3 g-3">
+                        <div class="col-md-8">
+                            <select class="form-select" id="hotelSelect">
+                                <option value="">Select Hotel</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" onclick="addHotel()">Add Hotel</button>
+                        </div>
+                    </div>
+
+                    <table class="vendor-table">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Hotel Name</th>
+                                <th>Stay Details</th>
+                                <th>Rooms</th>
+                                <th>Nights</th>
+                                <th>Rate/Night (₹)</th>
+                                <th>Total (₹)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hotelTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Totals Section -->
+            <div class="total-section">
+                <div class="row justify-content-end">
+                    <div class="col-md-4">
+                        <table class="table">
+                            <tr>
+                                <td>Subtotal:</td>
+                                <td class="text-end" id="subtotal">₹0.00</td>
+                            </tr>
+                            <tr>
+                                <td>GST (%):</td>
+                                <td class="text-end">
+                                    <select class="form-select" id="taxRate" onchange="calculateTotal()">
+                                        <option value="0">0%</option>
+                                        <option value="5">5%</option>
+                                        <option value="12">12%</option>
+                                        <option value="18">18%</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Grand Total:</td>
+                                <td class="text-end" id="grandTotal">₹0.00</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Footer -->
+            <div class="invoice-footer">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Terms & Conditions</h6>
+                        <ul class="mb-0">
+                            <li>50% advance payment required for confirmation</li>
+                            <li>Balance payment 7 days before event</li>
+                            <li>Cancellation policy: 30 days notice for full refund</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <p class="mb-4">For Event Masters Pvt. Ltd.</p>
+                        <div class="signature-box">
+                            <img src="/signature.png" alt="Authorized Signature" style="height: 50px;">
+                            <p class="mb-0">Authorized Signatory</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-4 d-flex gap-2">
+                <button class="btn btn-primary" onclick="saveProforma()">Save Draft</button>
+                <button class="btn btn-success" onclick="window.print()">Print Invoice</button>
+                <button class="btn btn-outline-secondary">Send Email</button>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../footer') -%>
+
+    <script>
+       
+        // Rest of the JavaScript remains similar with proper event listeners
+    </script>
+     <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const leadId = urlParams.get('id');
+            
+            if (!leadId) {
+                alert('Invalid lead ID');
+                return;
+            }
+
+            try {
+                const leadResponse = await axios.get(`/marketing/leads/${leadId}`);
+                const lead = leadResponse.data.data;
+                const clientResponse = await axios.get(`/marketing/getClientDetails/${lead.client_id}`);
+                const client = clientResponse.data.data;
+
+                document.getElementById('clientName').textContent = client.clientName;
+                document.getElementById('clientPhone').textContent = client.phoneNumber;
+                document.getElementById('clientEmail').textContent = client.email;
+                document.getElementById('clientAddress').textContent = `${client.address1} ${client.address2 || ''}`;
+                document.getElementById('clientCityState').textContent = `${client.city}, ${client.state} - ${client.postalCode}`;
+
+                document.getElementById('eventType').textContent = lead.event_type;
+                document.getElementById('eventDate').textContent = new Date(lead.event_date).toLocaleDateString();
+                document.getElementById('venue').textContent = lead.venue;
+                document.getElementById('peopleCount').textContent = lead.people_count;
+                document.getElementById('leadSource').textContent = lead.lead_source;
+                document.getElementById('invoiceDate').textContent = new Date().toLocaleDateString();
+
+                const vendorsResponse = await axios.get('/management/get-vendors');
+                const vendorSelect = document.getElementById('vendorSelect');
+                console.log(vendorsResponse)
+                vendorsResponse.data.vendors.forEach(vendor => {
+                    const option = document.createElement('option');
+                    option.value = vendor.id;
+                    option.textContent = `${vendor.vendorName} (${vendor.vendorType})`;
+                    vendorSelect.appendChild(option);
+                });
+
+                 // Load hotels
+        const hotelsResponse = await axios.get('/management/get-hotels');
+        const hotelSelect = document.getElementById('hotelSelect');
+        hotelsResponse.data.hotels.forEach(hotel => {
+            const option = document.createElement('option');
+            option.value = hotel.id;
+            option.textContent = `${hotel.hotelName} (${hotel.city}) - ${hotel.starCategory}★`;
+            hotelSelect.appendChild(option);
+        });
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Failed to load page data');
+            }
+        });
+
+        function addVendor() {
+            const vendorSelect = document.getElementById('vendorSelect');
+            const selectedVendor = vendorSelect.options[vendorSelect.selectedIndex];
+            
+            if (!selectedVendor.value) {
+                alert('Please select a vendor');
+                return;
+            }
+
+            const tableBody = document.getElementById('vendorTableBody');
+            
+            const newRow = `
+                <tr>
+                    <td>${selectedVendor.text}</td>
+                    <td><input type="text" class="form-control" placeholder="Service description"></td>
+                    <td><input type="number" class="form-control qty" value="1" min="1"></td>
+                    <td><input type="number" class="form-control rate" step="0.01" placeholder="0.00"></td>
+                    <td class="total">₹0.00</td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeVendorRow(this)">Remove</button></td>
+                </tr>`;
+            
+            tableBody.insertAdjacentHTML('beforeend', newRow);
+            vendorSelect.value = '';
+            
+            const inputs = tableBody.lastElementChild.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', calculateTotal);
+            });
+        }
+
+     // JavaScript remains similar but update calculation functions
+     function addHotel() {
+            const hotelSelect = document.getElementById('hotelSelect');
+            const selectedHotel = hotelSelect.options[hotelSelect.selectedIndex];
+            
+            const newRow = `
+                <tr data-type="hotel">
+                    <td>${selectedHotel.text}</td>
+                    <td>
+                        <input type="text" class="form-control" 
+                            value="2 Nights / 3 Days Stay" >
+                    </td>
+                    <td>
+                        <input type="number" class="form-control rooms" 
+                            value="1" min="1" title="Number of rooms">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control nights" 
+                            value="2" min="1" title="Number of nights">
+                    </td>
+                    <td>
+                        <input type="number" class="form-control rate" 
+                            step="0.01" placeholder="0.00"
+                            title="Rate per room per night">
+                    </td>
+                    <td class="total">₹0.00</td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" 
+                                onclick="removeVendorRow(this)">
+                            Remove
+                        </button>
+                    </td>
+                </tr>`;
+
+            document.getElementById('hotelTableBody').insertAdjacentHTML('beforeend', newRow);
+            hotelSelect.value = '';
+            attachInputListeners(newRow);
+        }
+
+        function calculateTotal() {
+            let subtotal = 0;
+            
+            // Calculate vendor services
+            document.querySelectorAll('#vendorTableBody tr').forEach(row => {
+                const qty = parseFloat(row.querySelector('.qty').value) || 0;
+                const rate = parseFloat(row.querySelector('.rate').value) || 0;
+                const total = qty * rate;
+                row.querySelector('.total').textContent = `₹${total.toFixed(2)}`;
+                subtotal += total;
+            });
+
+            // Calculate hotel stays
+            document.querySelectorAll('#hotelTableBody tr').forEach(row => {
+                const rooms = parseFloat(row.querySelector('.rooms').value) || 0;
+                const nights = parseFloat(row.querySelector('.nights').value) || 0;
+                const rate = parseFloat(row.querySelector('.rate').value) || 0;
+                const total = rooms * nights * rate;
+                row.querySelector('.total').textContent = `₹${total.toFixed(2)}`;
+                subtotal += total;
+            });
+
+            const taxRate = parseFloat(document.getElementById('taxRate').value) / 100;
+            const taxAmount = subtotal * taxRate;
+            const grandTotal = subtotal + taxAmount;
+
+            document.getElementById('subtotal').textContent = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('grandTotal').textContent = `₹${grandTotal.toFixed(2)}`;
+        }
+
+        function removeVendorRow(button) {
+            button.closest('tr').remove();
+            calculateTotal();
+        }
+
+        
+       // Update the saveProforma function to handle hotel data
+async function saveProforma() {
+    const lineItems = [];
+    
+    document.querySelectorAll('#vendorTableBody tr').forEach(row => {
+        const isHotel = row.getAttribute('data-type') === 'hotel';
+        const item = {
+            type: isHotel ? 'hotel' : 'vendor',
+            name: row.cells[0].textContent,
+            description: row.cells[1].querySelector('input').value,
+            quantity: row.cells[2].querySelector('input').value,
+            rate: row.cells[3].querySelector('input').value,
+            total: row.cells[4].textContent
+        };
+        
+        if (isHotel) {
+            item.metadata = {
+                checkInDate: '2023-01-01', // Add date pickers as needed
+                checkOutDate: '2023-01-02'
+            };
+        }
+        
+        lineItems.push(item);
+    });
+
+    if (lineItems.length === 0) {
+        alert('Please add at least one vendor or hotel');
+        return;
+    }
+
+    try {
+        const response = await axios.post('/marketing/save-proforma', {
+            leadId: new URLSearchParams(window.location.search).get('id'),
+            lineItems,
+            subtotal: document.getElementById('subtotal').textContent,
+            taxRate: document.getElementById('taxRate').value,
+            grandTotal: document.getElementById('grandTotal').textContent
+        });
+
+        if (response.data.success) {
+            alert('Proforma saved successfully!');
+        }
+    } catch (error) {
+        console.error('Error saving proforma:', error);
+        alert('Failed to save proforma');
+    } }
+    </script>
+</body>
+</html>

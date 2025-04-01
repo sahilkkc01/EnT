@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default" data-assets-path="../assets/" data-template="vertical-menu-template-free" data-style="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>List of Companies</title>
+    <%- include('../header') -%>
+  </head>
+  <body>
+    <div class="content-wrapper">
+      <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="card">
+          <div class="row card-header flex-column flex-md-row pb-4">
+            <div class="d-md-flex justify-content-between align-items-center col-md-auto me-auto mt-0">
+              <h5 class="card-title mb-0 text-md-start text-center">All Companies</h5>
+            </div>
+            <div class="btn-group">
+              <input type="search" class="form-control ms-2" id="nameFilter" placeholder="Search by Company Name">
+              <select id="stateFilter" class="form-control ms-2">
+                <option value="">Select State</option>
+              </select>
+              <select id="cityFilter" class="form-control ms-2">
+                <option value="">Select City</option>
+              </select>
+              <select id="statusFilter" class="form-control ms-2">
+                <option value="">Select Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+              <button id="exportButton" class="btn btn-label-primary">Export</button>
+              <button class="btn create-new btn-primary" type="button" onclick="window.location.href = '/company-reg'">+</button>
+            </div>
+          </div>
+          <div class="table-responsive text-nowrap">
+            <table class="table" id="companyTable">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Company Name</th>
+                  <th>Reg Number</th>
+                  <th>Mobile</th>
+                  <th>Email</th>
+                  <th>GST Numbers</th>
+                  <th>Address</th>
+                  <th>State</th>
+                  <th>City</th>
+                  <th>ZIP Code</th>
+                  <th>Status</th>
+                  <th>Reg Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="companyTbody" class="table-border-bottom-0"></tbody>
+            </table>
+            <div id="paginationControls"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <%- include('../footer') -%>
+
+    <script>
+      let stateMap = {};
+      let currentPage = 1;
+      const pageSize = 50;
+
+      document.addEventListener("DOMContentLoaded", async function () {
+          await loadState("stateFilter");
+          loadCompanies(currentPage);
+
+          document.getElementById("stateFilter").addEventListener("change", function () {
+              loadCity(this, "cityFilter");
+              filterCompanies();
+          });
+          document.getElementById("cityFilter").addEventListener("change", filterCompanies);
+          document.getElementById("nameFilter").addEventListener("input", filterCompanies);
+          document.getElementById("statusFilter").addEventListener("change", filterCompanies);
+      });
+
+      async function loadState(selectId) {
+          try {
+              const response = await fetch('/getStates');
+              const states = await response.json();
+              const dropdown = document.getElementById(selectId);
+              dropdown.innerHTML = '<option value="">Select State</option>';
+              states.forEach(state => {
+                  stateMap[state.stateCode] = state.stateName;
+                  const option = document.createElement('option');
+                  option.value = state.stateCode;
+                  option.textContent = state.stateName;
+                  dropdown.appendChild(option);
+              });
+          } catch (error) {
+              console.error('Error fetching states:', error);
+          }
+      }
+
+      async function loadCompanies(page) {
+          try {
+              // Build query string with filter values
+              const name = document.getElementById("nameFilter").value;
+              const state = document.getElementById("stateFilter").value;
+              const city = document.getElementById("cityFilter").value;
+              const status = document.getElementById("statusFilter").value;
+              const query = `?page=${page}&limit=${pageSize}&companyName=${encodeURIComponent(name)}&state=${state}&city=${city}&status=${status}`;
+
+              // Adjust the endpoint as needed for your companies API
+              const response = await axios.get(`/get-companies${query}`);
+              console.log(response)
+              const { companies, totalCompanies, totalPages } = response.data;
+              const tbody = document.getElementById("companyTbody");
+              tbody.innerHTML = "";
+              companies.forEach(company => {
+                  const row = document.createElement("tr");
+                  row.dataset.companyName = company.companyName.toLowerCase();
+                  row.dataset.state = company.state ? company.state.toLowerCase() : "";
+                  row.dataset.city = company.city ? company.city.toLowerCase() : "";
+                  row.dataset.status = company.status ? company.status.toLowerCase() : "";
+                  row.innerHTML = `
+                    <td>${company.id}</td>
+                    <td>${company.companyName}</td>
+                    <td>${company.regNumber}</td>
+                    <td>${company.mobile}</td>
+                    <td>${company.email}</td>
+                    <td>${company.gstNumber || 'N/A'}</td>
+                    <td>${company.address}</td>
+                    <td>${company.state ? stateMap[company.state] || company.state : ''}</td>
+                    <td>${company.city || ''}</td>
+                    <td>${company.zipCode}</td>
+                    <td>${company.status}</td>
+                    <td>${company.regDate}</td>
+                    <td>
+                      <button class="btn btn-icon" onclick="window.location.href='/company-reg?id=${company.id}'">
+                        <i class='bx bx-edit'></i>
+                      </button>
+                    </td>
+                  `;
+                  tbody.appendChild(row);
+              });
+              updatePaginationControls(totalCompanies, totalPages);
+          } catch (error) {
+              console.error("Error fetching company data:", error);
+          }
+      }
+
+      function updatePaginationControls(totalCompanies, totalPages) {
+          const paginationDiv = document.getElementById("paginationControls");
+          paginationDiv.innerHTML = `
+              <button id="prevPage" ${currentPage === 1 ? "disabled" : ""}>Prev</button>
+              Page ${currentPage} of ${totalPages}
+              <button id="nextPage" ${currentPage >= totalPages ? "disabled" : ""}>Next</button>
+          `;
+
+          setTimeout(() => {
+              document.getElementById("prevPage")?.addEventListener("click", function () {
+                  if (currentPage > 1) {
+                      currentPage--;
+                      loadCompanies(currentPage);
+                  }
+              });
+
+              document.getElementById("nextPage")?.addEventListener("click", function () {
+                  if (currentPage < totalPages) {
+                      currentPage++;
+                      loadCompanies(currentPage);
+                  }
+              });
+          }, 100);
+      }
+
+      function filterCompanies() {
+          // Reset to page 1 on filter change
+          currentPage = 1;
+          loadCompanies(currentPage);
+      }
+
+     
+    </script>
+  </body>
+</html>

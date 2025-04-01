@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr" data-theme="theme-default" data-assets-path="../assets/" data-template="vertical-menu-template-free" data-style="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <title>List of Vendors</title>
+    <%- include('../header') -%>
+  </head>
+  <body>
+    <div class="content-wrapper">
+      <div class="container-xxl flex-grow-1 container-p-y">
+        <div class="card">
+          <div class="row card-header flex-column flex-md-row pb-4">
+            <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0">
+              <h5 class="card-title mb-0 text-md-start text-center">All Vendors</h5>
+            </div>
+            <div class="btn-group">
+              <input type="search" class="form-control ms-2" id="nameFilter" placeholder="Search by Vendor Name">
+              <select id="stateFilter" class="form-control ms-2">
+                <option value="">Select State</option>
+              </select>
+              <select id="cityFilter" class="form-control ms-2">
+                <option value="">Select City</option>
+              </select>
+              <button id="exportButton" class="btn btn-label-primary">Export</button>
+              <button class="btn create-new btn-primary" type="button" onclick="window.location.href = '/management/add-vendor'">+ </button>
+            </div>
+          </div>
+          <div class="table-responsive text-nowrap">
+            <table class="table" id="vendorTable">
+              <thead>
+                <tr>
+                  <th>Vendor ID</th>
+                  <th>Vendor Name</th>
+                  <th>State</th>
+                  <th>City</th>
+                  <th>Contact</th>
+                  <th>Note</th>
+                  <th>Status</th>
+                  <th>Services</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vendorTbody" class="table-border-bottom-0"></tbody>
+            </table>
+            <div id="paginationControls"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <%- include('../footer') -%>
+
+<script>
+  let stateMap = {};
+  let currentPage = 1;
+  const pageSize = 50;
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    await loadState("stateFilter");
+    loadVendors(currentPage);
+
+    document.getElementById("stateFilter").addEventListener("change", function () {
+      loadCity(this, "cityFilter");
+      filterVendors();
+    });
+    document.getElementById("cityFilter").addEventListener("change", filterVendors);
+    document.getElementById("nameFilter").addEventListener("input", filterVendors);
+  });
+
+  async function loadState(selectId) {
+    try {
+      const response = await fetch('/getStates');
+      const states = await response.json();
+      const dropdown = document.getElementById(selectId);
+      dropdown.innerHTML = '<option value="">Select State</option>';
+      states.forEach(state => {
+        stateMap[state.stateCode] = state.stateName;
+        const option = document.createElement('option');
+        option.value = state.stateCode;
+        option.textContent = state.stateName;
+        dropdown.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Error fetching states:', error);
+    }
+  }
+
+  async function loadVendors(page) {
+    try {
+        const response = await axios.get(`/management/get-vendors?page=${page}&limit=${pageSize}`);
+        const { vendors, totalVendors, totalPages } = response.data;
+        const tbody = document.getElementById("vendorTbody");
+        tbody.innerHTML = "";
+        vendors.forEach(vendor => {
+            const row = document.createElement("tr");
+            row.dataset.vendorId = vendor.id;
+            row.dataset.state = vendor.state;
+            row.dataset.city = vendor.city;
+            row.dataset.vendorName = vendor.vendorName.toLowerCase();
+
+            // Parse services if it's a JSON string
+            let services = [];
+            try {
+                services = typeof vendor.services === "string" ? JSON.parse(vendor.services) : vendor.services;
+            } catch (error) {
+                console.error("Error parsing services:", error);
+            }
+
+            // Format services into a readable list
+            const serviceHTML = services.map(service => `
+                <div><strong>${service.serviceName}:</strong> ${service.serviceDetails} (Avg Rent: ₹${service.avgRent})</div>
+            `).join("");
+
+            row.innerHTML = `
+                <td>${vendor.id}</td>
+                <td>${vendor.vendorName}</td>
+                <td>${stateMap[vendor.state] || "Unknown"}</td>
+                <td>${vendor.city}</td>
+                <td>${vendor.phoneNumber}</td>
+                <td>${vendor.vendorNotes}</td>
+                <td>${vendor.vendorStatus}</td>
+                <td>${serviceHTML || "No services available"}</td>
+                <td>
+                    <button class="btn btn-icon item-edit" onclick="window.location.href='/management/add-vendor?id=${vendor.id}'">
+                        <i class="icon-base bx bx-edit"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+        updatePaginationControls(totalVendors, totalPages);
+    } catch (error) {
+        console.error("Error fetching vendor data:", error);
+    }
+}
+
+  function updatePaginationControls(totalVendors, totalPages) {
+    const paginationDiv = document.getElementById("paginationControls");
+    paginationDiv.innerHTML = `
+      <button id="prevPage" ${currentPage === 1 ? "disabled" : ""}>Prev</button>
+      Page ${currentPage} of ${totalPages}
+      <button id="nextPage" ${currentPage >= totalPages ? "disabled" : ""}>Next</button>
+    `;
+
+    // Reattach event listeners
+    setTimeout(() => {
+        document.getElementById("prevPage")?.addEventListener("click", function () {
+            if (currentPage > 1) {
+                currentPage--;
+                loadVendors(currentPage);
+            }
+        });
+
+        document.getElementById("nextPage")?.addEventListener("click", function () {
+            if (currentPage < totalPages) {
+                currentPage++;
+                loadVendors(currentPage);
+            }
+        });
+    }, 100);
+}
+
+  function filterVendors() {
+    const state = document.getElementById("stateFilter").value.toLowerCase();
+    const city = document.getElementById("cityFilter").value.toLowerCase();
+    const name = document.getElementById("nameFilter").value.toLowerCase();
+
+    document.querySelectorAll("#vendorTable tbody tr").forEach(row => {
+        const vendorState = row.dataset.state?.toLowerCase() || "";
+        const vendorCity = row.dataset.city?.toLowerCase() || "";
+        const vendorName = row.dataset.vendorName?.toLowerCase() || "";
+
+        let show = true;
+        if (state && vendorState !== state) show = false;
+        if (city && vendorCity !== city) show = false;
+        if (name && !vendorName.includes(name)) show = false;
+
+        row.style.display = show ? "" : "none";
+    });
+}
+
+</script>
+
+  </body>
+</html>

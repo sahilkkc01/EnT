@@ -120,7 +120,11 @@
     $('#tblid').on('click', '#action', function() {
         const id = $(this).closest('tr').data('employee-id');
         const route = '/HR/add-employee';
-        ViewBtn(route, id);
+        window.location.href = `${route}?id=${id}`;
+    });
+    $('#hotelTable').on('click', '.editHotel', function () {
+        const id = $(this).closest('tr').data('hotel-id');
+        window.location.href = `/management/add-hotel?id=${id}`;
     });
 });
 

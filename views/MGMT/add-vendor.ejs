@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Vendor Registration</title>
+
+    <%- include('../header') -%>
+</head>
+
+<body>
+
+    <div class="content-wrapper">
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card overflow-hidden">
+                        <h5 class="card-header">Vendor Registration</h5>
+                        <div class="card-body pt-4">
+                            <form id="VendorForm" method="POST">
+                                <div id="errordiv"></div>
+                                <div class="row g-4">
+
+                                    <!-- Vendor Name -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Vendor Name*</label>
+                                        <input type="text" id="vendorName" name="vendorName" class="form-control"
+                                            required>
+                                    </div>
+
+                                    <!-- Contact Person -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Contact Person*</label>
+                                        <input type="text" id="contactPerson" name="contactPerson" class="form-control"
+                                            required>
+                                    </div>
+
+                                    <!-- Phone Number -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Phone Number*</label>
+                                        <input type="number" id="phoneNumber" name="phoneNumber" class="form-control"
+                                            required data-validation="required mobileNum">
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" id="email" name="email" class="form-control">
+                                    </div>
+
+                                    <!-- State & City -->
+                                    <div class="col-md-3">
+                                        <label class="input__label">State*</label>
+                                        <select name="state" id="state" onchange="loadCity(this,'city')"
+                                            class="form-control" required>
+                                            <option value="">Select</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="input__label">City*</label>
+                                        <select name="city" id="city" class="form-control" required>
+                                            <option value="">Select</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Vendor Type -->
+                                    <div class="col-md-6">
+                                        <label class="form-label">Vendor Type*</label>
+                                        <select id="vendorType" name="vendorType" class="form-select" required>
+                                            <option value="">Select</option>
+
+                                            <option value="add-new">add-new</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Vendor Contact Details -->
+                                    <div class="col-md-12">
+                                        <label class="form-label">Contact Details*</label>
+                                        <div id="contactDetailsContainer">
+                                            <div class="d-flex mb-2">
+                                                <input type="text" name="poc[]" class="form-control me-2"
+                                                    placeholder="POC" required>
+                                                <input type="text" name="pocName[]" class="form-control me-2"
+                                                    placeholder="POC Name" required>
+                                                <input type="text" name="contactDetails[]" class="form-control me-2"
+                                                    placeholder="Contact Details" required>
+                                                <button type="button" class="btn btn-danger remove-contact">X</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary mt-2" id="addContact">+ Add
+                                            Contact</button>
+                                    </div>
+
+                                    <!-- Services -->
+                                    <div class="col-md-12">
+                                        <label class="form-label">Services</label>
+                                        <div id="servicesContainer">
+                                            <div class="d-flex mb-2">
+                                                <input type="text" name="serviceName[]" class="form-control me-2"
+                                                    placeholder="Service Name" required>
+                                                <input type="number" name="avgRent[]" class="form-control me-2"
+                                                    placeholder="Avg Rent (Per Unit)">
+                                                <input type="text" name="serviceDetails[]" class="form-control me-2"
+                                                    placeholder="Service Details">
+                                                <button type="button" class="btn btn-danger remove-service">X</button>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-primary mt-2" id="addService">+ Add
+                                            Service</button>
+                                    </div>
+
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Rating</label>
+                                        <input type="number" id="vendorRating" name="vendorRating" class="form-control"
+                                            min="1" max="5" placeholder="1-5">
+
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Portfolio (Website/Insta/Facebook)</label>
+                                        <input type="text" id="vendorPortfolio" name="vendorPortfolio"
+                                            class="form-control" placeholder="Enter Portfolio Link">
+
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Vendor Status*</label>
+                                        <select id="vendorStatus" name="vendorStatus" class="form-select">
+                                            <option value="Active">Active</option>
+                                            <option value="Inactive">Inactive</option>
+                                            <option value="Blacklisted">Blacklisted</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Internal Review Notes</label>
+                                        <textarea id="vendorNotes" name="vendorNotes" class="form-control" rows="3"
+                                            placeholder="Write any important notes"></textarea>
+                                        </select>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="nationalService"
+                                            name="nationalService">
+                                        <label class="form-check-label">Available for National/International
+                                            Service</label>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Account Number</label>
+                                        <input type="number" id="accNumber" name="accNumber" class="form-control">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Account Type</label>
+                                        <select id="accType" name="accType" class="form-select">
+                                            <option value="">Select</option>
+                                            <option value="GST">GST</option>
+                                            <option value="NON-GST">NON-GST</option>
+
+
+                                        </select>
+                                    </div>
+                                    <!-- GST Number -->
+                                    <div class="col-md-3">
+                                        <label class="form-label">GST Number</label>
+                                        <input type="text" id="gstNumber" name="gstNumber" class="form-control">
+                                    </div>
+
+                                </div>
+
+                                <div id="loadingIndicator"></div>
+                                <div class="mt-4">
+                                    <button type="submit" class="btn btn-primary me-3">Save</button>
+                                    <button type="reset" onclick="window.location.href = '/management/vendors'"
+                                        class="btn btn-outline-secondary">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="smallModal2" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel2">Add Vendor Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col mb-6">
+                            <label for="newVendorType" class="form-label">Vendor Type</label>
+                            <input type="text" id="newVendorType" class="form-control" placeholder="" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="button" id="addVendorType" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <%- include('../footer') -%>
+
+        <script>
+            $(document).ready(async function () {
+                // Add Contact Details
+                $("#addContact").on("click", function () {
+                    $("#contactDetailsContainer").append(`
+            <div class="d-flex mb-2">
+                <input type="text" name="poc[]" class="form-control me-2" placeholder="POC" required>
+                <input type="text" name="pocName[]" class="form-control me-2" placeholder="POC Name" required>
+                <input type="text" name="contactDetails[]" class="form-control me-2" placeholder="Contact Details" required>
+                <button type="button" class="btn btn-danger remove-contact">X</button>
+            </div>
+        `);
+                });
+
+                // Remove Contact Details
+                $(document).on("click", ".remove-contact", function () {
+                    $(this).parent().remove();
+                });
+
+                // Add Services
+                $("#addService").on("click", function () {
+                    $("#servicesContainer").append(`
+            <div class="d-flex mb-2">
+                <input type="text" name="serviceName[]" class="form-control me-2" placeholder="Service Name" required>
+                <input type="text" name="avgRent[]" class="form-control me-2" placeholder="Avg Rent (Per Unit)">
+                <input type="text" name="serviceDetails[]" class="form-control me-2" placeholder="Service Details">
+                <button type="button" class="btn btn-danger remove-service">X</button>
+            </div>
+        `);
+                });
+
+                // Remove Service
+                $(document).on("click", ".remove-service", function () {
+                    $(this).parent().remove();
+                });
+
+                // Load Vendor Type dropdown
+                loadDropdown('vendorType', 'VendorType', 'name', '');
+                restrictInput("phoneNumber", 10);
+
+                // Show modal when "add-new" is selected in Vendor Type
+                $('#vendorType').on('change', function () {
+                    if ($(this).val() === 'add-new') {
+                        $('#smallModal2').modal('show');
+                    }
+                });
+
+                // Add new Vendor Type
+                $('#addVendorType').on('click', async function () {
+                    const newVendorType = $('#newVendorType').val();
+                    if (newVendorType) {
+                        try {
+                            await axios.post('/addVendorType', { vendorType: newVendorType });
+                            $('#smallModal2').modal('hide');
+                            loadDropdown('vendorType', 'VendorType', 'name', newVendorType);
+                            $('#newVendorType').val('');
+                        } catch (error) {
+                            alert(error.response?.data?.message || "An error occurred");
+                        }
+                    } else {
+                        alert('Please enter a Vendor Type');
+                    }
+                });
+
+                // Load State and City Data
+                await loadState("state");
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const vendorId = urlParams.get('id');
+
+                if (vendorId) {
+                    try {
+                        const response = await axios.get(`/management/vendor-details/${vendorId}`);
+
+                        if (response.data.success) {
+                            const vendor = response.data.data;
+
+                            // Populate text and dropdown fields
+                            $('#vendorName').val(vendor.vendorName);
+                            $('#contactPerson').val(vendor.contactPerson);
+                            $('#phoneNumber').val(vendor.phoneNumber);
+                            $('#email').val(vendor.email);
+                            await loadDropdown('vendorType', 'VendorType', 'name', vendor.vendorType);
+                            $('#vendorType').val();
+                            $('#vendorRating').val(vendor.vendorRating);
+                            $('#vendorPortfolio').val(vendor.vendorPortfolio);
+                            $('#vendorStatus').val(vendor.vendorStatus);
+                            $('#vendorNotes').val(vendor.vendorNotes);
+                            $('#accNumber').val(vendor.accNumber);
+                            $('#accType').val(vendor.accType);
+                            $('#gstNumber').val(vendor.gstNumber);
+                            $('#nationalService').prop('checked', vendor.nationalService == 1);
+
+                            // **Wait until states are loaded, then set state**
+                            await loadState("state", vendor.state);
+                            $("#state").trigger("change");
+
+                            // **Wait until cities are loaded, then set city**
+                            setTimeout(() => {
+                                $("#city").val(vendor.city).trigger("change");
+                            }, 500);
+
+                            // Populate Contacts
+                            $('#contactDetailsContainer').empty();
+                            if (vendor.contacts && vendor.contacts.length > 0) {
+                                vendor.contacts.forEach(contact => {
+                                    $("#contactDetailsContainer").append(`
+                        <div class="d-flex mb-2">
+                            <input type="text" name="poc[]" class="form-control me-2" value="${contact.poc}" placeholder="POC" required>
+                            <input type="text" name="pocName[]" class="form-control me-2" value="${contact.pocName}" placeholder="POC Name" required>
+                            <input type="text" name="contactDetails[]" class="form-control me-2" value="${contact.contactDetails}" placeholder="Contact Details" required>
+                            <button type="button" class="btn btn-danger remove-contact">X</button>
+                        </div>
+                    `);
+                                });
+                            }
+
+                            $('#servicesContainer').empty();
+                            if (vendor.services && vendor.services.length > 0) {
+                                vendor.services.forEach(service => {
+                                    $("#servicesContainer").append(`
+            <div class="d-flex mb-2">
+                <input type="text" name="serviceName[]" class="form-control me-2" value="${service.serviceName}" placeholder="Service Name" required>
+                <input type="text" name="avgRent[]" class="form-control me-2" value="${service.avgRent}" placeholder="Avg Rent (Per Unit)">
+                <input type="text" name="serviceDetails[]" class="form-control me-2" value="${service.serviceDetails}" placeholder="Service Details">
+                <button type="button" class="btn btn-danger remove-service">X</button>
+            </div>
+        `);
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        console.error("Error fetching vendor data:", error);
+                    }
+                } else {
+                    loadState("state");
+                }
+
+                // Handle Form Submission
+                $('#VendorForm').submit(async function (event) {
+                    event.preventDefault();
+                    const { isValid, errorMessage } = validateForm('#VendorForm');
+                    if (!isValid) {
+                        $("#errordiv").removeClass("alert-success").addClass("alert-danger").text(errorMessage).show();
+                        return;
+                    }
+
+                    let formData = {
+                        id: new URLSearchParams(window.location.search).get('id') || null,
+                        vendorName: $('#vendorName').val(),
+                        contactPerson: $('#contactPerson').val(),
+                        phoneNumber: $('#phoneNumber').val(),
+                        email: $('#email').val(),
+                        state: $('#state').val(),
+                        city: $('#city').val(),
+                        vendorType: $('#vendorType').val(),
+                        vendorRating: $('#vendorRating').val(),
+                        vendorPortfolio: $('#vendorPortfolio').val(),
+                        vendorStatus: $('#vendorStatus').val(),
+                        vendorNotes: $('#vendorNotes').val(),
+                        accNumber: $('#accNumber').val(),
+                        accType: $('#accType').val(),
+                        gstNumber: $('#gstNumber').val(),
+                        nationalService: $('#nationalService').prop('checked') ? 1 : 0,
+                        contacts: [],
+                        services: []
+                    };
+
+                    // Collect Contact Details
+                    $('#contactDetailsContainer .d-flex').each(function () {
+                        formData.contacts.push({
+                            poc: $(this).find('input[name="poc[]"]').val(),
+                            pocName: $(this).find('input[name="pocName[]"]').val(),
+                            contactDetails: $(this).find('input[name="contactDetails[]"]').val()
+                        });
+                    });
+
+                    // Collect Services
+                    $('#servicesContainer .d-flex').each(function () {
+                        formData.services.push({
+                            serviceName: $(this).find('input[name="serviceName[]"]').val(),
+                            avgRent: $(this).find('input[name="avgRent[]"]').val(),
+                            serviceDetails: $(this).find('input[name="serviceDetails[]"]').val()
+                        });
+                    });
+
+                    try {
+                        const response = await axios.post('/management/vendorReg', formData);
+                        $("#errordiv").removeClass("alert-danger").addClass("alert-success").text(response.data.message).show();
+                        setTimeout(() => {
+                            window.location.href = "/management/vendors";
+                        }, 1500);
+                    } catch (error) {
+                        $("#errordiv").removeClass("alert-success").addClass("alert-danger").text(error.response?.data?.message || "Unknown error").show();
+                    }
+                });
+            });
+
+        </script>
+
+
+</body>
+
+</html>

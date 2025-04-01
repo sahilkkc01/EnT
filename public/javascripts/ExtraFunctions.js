@@ -177,7 +177,7 @@ async function saveJsonForm(formId, endpoint, arrayObj = null) {
   });
 }
 
-function createSmallModal(id, name, path, sId, elmtId) {
+function createSmallModal(id, heading, path) {
   const modal = document.createElement("div");
   modal.className = "modal fade";
   modal.id = id;
@@ -187,13 +187,13 @@ function createSmallModal(id, name, path, sId, elmtId) {
     <div class="modal-dialog modal-sm" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="${id}Label">Add ${name}</h5>
+          <h5 class="modal-title">${heading}</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="row">
             <div class="col mb-6">
-              <label for="input${id}" class="form-label">${name}</label>
+              <label for="input${id}" class="form-label">${heading}</label>
               <input type="text" id="input${id}" class="form-control" placeholder="" />
             </div>
           </div>
@@ -202,7 +202,7 @@ function createSmallModal(id, name, path, sId, elmtId) {
           <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
             Close
           </button>
-          <button type="button" id="save${id}" onclick="saveModalData('${id}','${path}','${sId}','${name}','${elmtId}')" class="btn btn-primary">Save</button>
+          <button type="button" onclick="saveModalData('${id}', '${path}')" class="btn btn-primary">Save</button>
         </div>
       </div>
     </div>
@@ -212,25 +212,23 @@ function createSmallModal(id, name, path, sId, elmtId) {
   $(`#${id}`).modal("show");
 }
 
-async function saveModalData(id, path, sid, name, elmtId) {
-  const inputValue = document.getElementById(`input${id}`).value;
-  if (inputValue) {
-    try {
-      const response = await axios.post(path, {
-        name: inputValue,
-        tableName: sid,
-      });
-      $(`#${id}`).modal("hide");
-      loadDropdown(elmtId, sid, "name", "");
-      document.getElementById(`input${id}`).value = "";
-    } catch (error) {
-      console.log(error);
-      alert(error.response?.data?.message || "An error occurred");
-    }
-  } else {
-    alert(`Please enter a ${name}`);
+async function saveModalData(id, path) {
+  const inputValue = document.getElementById(`input${id}`).value.trim();
+  if (!inputValue) {
+    alert("Please enter a value");
+    return;
+  }
+
+  try {
+    await axios.post(path, { name: inputValue });
+    $(`#${id}`).modal("hide");
+    document.getElementById(`input${id}`).value = "";
+  } catch (error) {
+    console.log(error);
+    alert(error.response?.data?.message || "An error occurred");
   }
 }
+
 
  // Function to collect form data
           function collectFormDataWithTbl(formId,tblId) {
@@ -292,29 +290,35 @@ async function saveModalData(id, path, sid, name, elmtId) {
 }
 
 
-function loadState(a){
+function loadState(a, val = null) {
   fetch('/getStates')
       .then(response => response.json())
       .then(data => {
           const dropdown = document.getElementById(a);
+          dropdown.innerHTML = '<option value="">Select State</option>'; // Reset dropdown
+
           data.forEach(state => {
               const option = document.createElement('option');
               option.value = state.stateCode;
               option.textContent = state.stateName;
               dropdown.appendChild(option);
-              
           });
-         
+
+          if (val) {
+              dropdown.value = val;
+              dropdown.dispatchEvent(new Event('change')); // Trigger change event if value is set
+          }
       })
       .catch(error => console.error('Error fetching states:', error));
-  }
+}
+
   function loadCity(stateCode,id) {
     fetch('/cities')
         .then(response => response.json())
         .then(data => {
   
             const cityDropdown = document.getElementById(id);
-            cityDropdown.innerHTML = '<option value="">Select</option>'; // Reset dropdown
+            cityDropdown.innerHTML = '<option value="">Select City</option>'; // Reset dropdown
 
             const filteredCities = data.filter(city => city.stateCode === stateCode.value);
             filteredCities.forEach(city => {
@@ -323,6 +327,7 @@ function loadState(a){
                 option.textContent = city.cityName;
                 cityDropdown.appendChild(option);
             });
+            console.log(filteredCities)
         })
         .catch(error => console.error('Error fetching cities:', error));
 }

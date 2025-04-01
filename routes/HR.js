@@ -3,7 +3,7 @@ var router = express.Router();
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
-const { saveEmployeeData, getAllEmployees } = require('../controllers/HRctrl');
+const { saveEmployeeData, getAllEmployees, getEmployeeDetails, updateEmployeeData } = require('../controllers/HRctrl');
 JWT_SECRET=process.env.JWT_SECRET
 
 const storage = multer.diskStorage({
@@ -25,6 +25,9 @@ router.get("/employees", function (req, res, next) {
 });
 
 router.post("/emp-reg", upload.single("empImage"), saveEmployeeData);
+router.post("/emp-update/:id", upload.single("empImage"), updateEmployeeData);
 router.get("/get-employees", getAllEmployees);
+router.get('/emp-details/:id', getEmployeeDetails);
+
 
 module.exports = {router};

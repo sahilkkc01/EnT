@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Client Management System</title>
+    <%- include('../header') -%>
+        <style>
+            .client-details {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 0.3rem 1rem;
+                padding: 0.5rem;
+                background: #f8f9fa;
+                border-radius: 8px;
+                margin-bottom: 1.5rem;
+                align-items: center;
+            }
+
+            .client-details .detail-item {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding: 5px;
+                background: #fff;
+                border-radius: 6px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            .client-details .detail-item h6 {
+                font-size: 0.85rem;
+                color: #6c757d;
+                margin-bottom: 3px;
+                font-weight: 600;
+            }
+
+            .client-details .detail-item p {
+                font-size: 0.95rem;
+                color: #343a40;
+                margin: 0;
+                font-weight: 500;
+            }
+
+            .client-details .detail-item .badge {
+                font-size: 0.8rem;
+                padding: 3px 6px;
+            }
+
+            .custom-badge {
+                font-size: 1rem;
+                padding: 8px 12px;
+                border-radius: 8px;
+            }
+
+            .status-label {
+                font-weight: bold;
+                font-size: 1.1rem;
+            }
+
+            .poc-item {
+                margin-bottom: 8px;
+                padding: 8px;
+                background: #f1f1f1;
+                border-radius: 4px;
+            }
+        </style>
+</head>
+
+<body>
+    <div class="content-wrapper">
+        <div class="container-xxl flex-grow-1 container-p-y">
+            <div class="card">
+                <div class="row card-header flex-column flex-md-row pb-4">
+                    <div class="d-md-flex justify-content-between align-items-center col-md-auto me-auto mt-0">
+                        <h5 class="card-title mb-0 text-md-start text-center">Client Management</h5>
+                    </div>
+                    <div class="col-md-auto mt-3 mt-md-0">
+                        <div class="client-status">
+                            <span class="status-label">Status:</span>
+                            <span id="clientStatus" class="badge custom-badge">Loading...</span>
+                            <span class="status-label ms-3">Priority:</span>
+                            <span id="clientPriority" class="badge custom-badge">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Details Section -->
+                <div class="card-body border-bottom">
+                    <div class="client-details">
+                        <div class="detail-item">
+                            <h6>Client Name</h6>
+                            <p id="clientName">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Client Type</h6>
+                            <p id="clientType">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Primary Phone</h6>
+                            <p id="phoneNumber">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Secondary Phone</h6>
+                            <p id="secondaryPhone">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Email</h6>
+                            <p id="email">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Registration Date</h6>
+                            <p id="registrationDate">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Client Category</h6>
+                            <p id="clientCategory">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Client Source</h6>
+                            <p id="clientSource">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Preferred Contact</h6>
+                            <p id="preferredContact">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Preferred Time</h6>
+                            <p id="preferredTime">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>GST Number</h6>
+                            <p id="gstNumber">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>PAN Number</h6>
+                            <p id="panNumber">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Address</h6>
+                            <p id="address">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>State & City</h6>
+                            <p id="stateCity">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Postal Code</h6>
+                            <p id="postalCode">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Internal Notes</h6>
+                            <p id="internalNotes">Loading...</p>
+                        </div>
+                        <div class="detail-item">
+                            <h6>POC Details</h6>
+                            <div id="pocDetails"></div>
+                        </div>
+                        <div class="detail-item">
+                            <h6>Previous Services</h6>
+                            <div id="serviceDetails"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Section -->
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="clientTabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#followUp">Follow Up</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " data-bs-toggle="tab" href="#interactions">Interactions</a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#services">Services</a>
+                        </li> -->
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#team">Team Assigned</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#documents">Documents</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#leads">Leads</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3">
+                        <!-- Follow Up Tab -->
+                        <div id="followUp" class="tab-pane fade show active">
+                            <form id="followUpForm" method="post">
+
+                                <div class="row">
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Next Call Date & Time</label>
+                                            <input type="datetime-local" class="form-control" name="nextFollowUpTime"
+                                                id="nextFollowUpTime" required>
+                                        </div>
+
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Remark</label>
+                                        <textarea class="form-control" rows="3" name="remark" id="remark"></textarea>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Save Follow-up</button>
+                            </form>
+
+
+                            <div class="mt-4">
+                                <h5>Follow-up History</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Next Follow-up Date</th>
+                                                <th>Remark</th>
+                                                <th>Status</th>
+                                                <th style="min-width: 100px;">Recorded By</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="followupTableBody">
+                                            <!-- Follow-ups will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Interactions Tab -->
+                        <!-- Combined Interaction and Lead Details Form -->
+                        <div id="interactions" class="tab-pane fade show">
+                            <form id="interactionForm" method="post">
+                                <div class="row">
+                                    <!-- Interaction Section -->
+                                    <div class="col-md-6">
+                                        <h5>Interaction Details</h5>
+                                        <div class="mb-3">
+                                            <label class="form-label">Interaction Type</label>
+                                            <select class="form-select" name="interaction_type" required>
+                                                <option value="phone">Phone Call</option>
+                                                <option value="email">Email</option>
+                                                <option value="meeting">Meeting</option>
+                                                <option value="site-visit">Site Visit</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Date & Time</label>
+                                            <input type="datetime-local" class="form-control" name="interaction_date"
+                                                required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Notes</label>
+                                            <textarea class="form-control" rows="3" name="notes" required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Outcome</label>
+                                            <select class="form-select" name="outcome" required>
+                                                <option value="positive">Positive</option>
+                                                <option value="neutral">Neutral</option>
+                                                <option value="negative">Negative</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Lead Generated</label>
+                                            <select class="form-select" name="leadGenerated" id="leadGenerated"
+                                                required>
+                                                <option value="No">No</option>
+                                                <option value="Yes">Yes</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Interaction Table -->
+                                    <div class="col-md-6">
+                                        <h5>Past Interactions</h5>
+                                        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                            <table class="table table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Date</th>
+                                                        <th>Type</th>
+                                                        <th>Notes</th>
+                                                        <th>Outcome</th>
+                                                        <th style="min-width: 170px;">Lead Generated</th>
+                                                        <th style="min-width: 150px;">Recorded By</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="interactionsTableBody">
+                                                    <!-- Interactions will be populated here -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Lead Details Section (Shown only if Lead Generated is "Yes") -->
+                                <div id="leadFormContainer" style="display: none; margin-top: 20px;">
+                                    <h5>Client Lead Details</h5>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Event Type</label>
+                                            <select name="event_type" class="form-control">
+                                                <option value="">Select</option>
+                                                <option value="corporate">Corporate</option>
+                                                <option value="travel">Travel</option>
+                                                <option value="wedding">Wedding</option>
+                                                <option value="conference">Conference</option>
+                                                <option value="exhibition">Exhibition</option>
+                                                <option value="concert">Concert</option>
+                                                <option value="sports">Sports</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="input__label">State*</label>
+                                            <select name="state" id="state" onchange="loadCity(this, 'city')"
+                                                class="form-control">
+                                                <option value="">Select</option>
+                                                <!-- Options to be loaded dynamically -->
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="input__label">City</label>
+                                            <select name="city" id="city" class="form-control">
+                                                <option value="">Select</option>
+                                                <!-- Options to be loaded dynamically -->
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Venue</label>
+                                            <input type="text" class="form-control" name="venue"
+                                                placeholder="Enter venue">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Event Date</label>
+                                            <input type="date" class="form-control" name="event_date">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Requirement</label>
+                                            <textarea class="form-control" rows="1" name="requirement"
+                                                placeholder="Describe requirements"></textarea>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">People Count</label>
+                                            <input type="number" class="form-control" name="people_count"
+                                                placeholder="Enter count">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Lead Source</label>
+                                            <select name="lead_source" class="form-control">
+                                                <option value="">Select</option>
+                                                <option value="website">Website</option>
+                                                <option value="call">Call</option>
+                                                <option value="social_media">Social Media</option>
+                                                <option value="email">Email</option>
+                                                <option value="referral">Referral</option>
+                                                <option value="walk_in">Walk-In</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Lead Status</label>
+                                            <select name="lead_status" class="form-control">
+                                                <option value="">Select</option>
+                                                <option value="new">New</option>
+                                                <option value="in_progress">In Progress</option>
+                                                <option value="follow_up">Follow-Up</option>
+                                                <option value="closed_won">Closed Won</option>
+                                                <option value="closed_lost">Closed Lost</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Priority</label>
+                                            <select name="priority" class="form-control">
+                                                <option value="">Select</option>
+                                                <option value="high">High</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="low">Low</option>
+                                                <option value="urgent">Urgent</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Next Follow-up</label>
+                                            <input type="datetime-local" class="form-control" name="next_followup">
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label">Additional Details</label>
+                                            <textarea class="form-control" rows="1" name="additional_details"
+                                                placeholder="Any additional info"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Single Submit Button for Combined Data -->
+                                <button type="submit" class="btn btn-primary">Log Interaction</button>
+                            </form>
+                        </div>
+
+                        <!-- JavaScript to toggle lead details section -->
+                        <script>
+                            document.getElementById('leadGenerated').addEventListener('change', function () {
+                                var leadFormContainer = document.getElementById('leadFormContainer');
+                                var leadFields = leadFormContainer.querySelectorAll('input, select');
+                                if (this.value === 'Yes') {
+                                    leadFormContainer.style.display = 'block';
+                                    // Add required attribute to each lead field
+                                    leadFields.forEach(function (field) {
+                                        field.setAttribute('required', 'required');
+                                    });
+                                } else {
+                                    leadFormContainer.style.display = 'none';
+                                    // Remove required attribute from each lead field
+                                    leadFields.forEach(function (field) {
+                                        field.removeAttribute('required');
+                                    });
+                                }
+                            });
+                        </script>
+
+
+                        <!-- JavaScript to toggle lead form display -->
+                        <script>
+                            document.getElementById('leadGenerated').addEventListener('change', function () {
+                                var leadFormContainer = document.getElementById('leadFormContainer');
+                                if (this.value === 'Yes') {
+                                    leadFormContainer.style.display = 'block';
+                                } else {
+                                    leadFormContainer.style.display = 'none';
+                                }
+                            });
+                        </script>
+
+
+                        <!-- Services Tab -->
+                        <div id="services" class="tab-pane fade">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <form id="serviceForm" method="post">
+                                        <div class="mb-3">
+                                            <label class="form-label">Service Type</label>
+                                            <select class="form-select" name="service_type" required>
+                                                <option value="event">Event Management</option>
+                                                <option value="tour">Tour Management</option>
+                                                <option value="both">Both</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Service Date</label>
+                                            <input type="date" class="form-control" name="service_date" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Service Details</label>
+                                            <textarea class="form-control" rows="3" name="service_details"
+                                                required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Status</label>
+                                            <select class="form-select" name="status" required>
+                                                <option value="planned">Planned</option>
+                                                <option value="in-progress">In Progress</option>
+                                                <option value="completed">Completed</option>
+                                                <option value="cancelled">Cancelled</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Add Service</button>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Type</th>
+                                                    <th>Details</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="servicesTableBody">
+                                                <!-- Services will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Team Assigned Tab -->
+                        <div id="team" class="tab-pane fade">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Assigned Team Members</h5>
+                                    <div class="list-group" id="assignedTeamList"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5>Assign New Member</h5>
+                                    <form id="assignTeamForm">
+                                        <div class="mb-3">
+                                            <label class="form-label">Select Team Member</label>
+                                            <select class="form-select" id="team_member" name="team_member"
+                                                required></select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Role</label>
+                                            <input type="text" class="form-control" name="role" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Assign Member</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Documents Tab -->
+                        <div id="documents" class="tab-pane fade">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <form id="documentForm" enctype="multipart/form-data">
+                                        <div class="mb-3">
+                                            <label class="form-label">Document Type</label>
+                                            <select class="form-select" name="document_type" required>
+                                                <option value="contract">Contract</option>
+                                                <option value="invoice">Invoice</option>
+                                                <option value="proposal">Proposal</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Description</label>
+                                            <textarea class="form-control" rows="2" name="description"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Upload Document</label>
+                                            <input type="file" class="form-control" name="document" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Upload Document</button>
+                                    </form>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Type</th>
+                                                    <th>Description</th>
+                                                    <th>File</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="documentsTableBody">
+                                                <!-- Documents will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="leads" class="tab-pane fade">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Lead ID</th>
+                                                    <th>Track</th>
+                                                    <th>Event Type</th>
+                                                    <th>Venue</th>
+                                                    <th>Event Date</th>
+                                                    <th>Lead Source</th>
+                                                    <th style="min-width: 150px;">Lead Status</th>
+                                                    <th style="min-width: 150px;">Priority</th>
+                                                    <th>Next Follow-up</th>
+                                                    <th>Created By</th>
+                                                    <th>Created Date</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="leadsTableBody">
+                                                <!-- Leads will be populated here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../footer') -%>
+        <script>
+            document.addEventListener('DOMContentLoaded', async function () {
+                const urlParams = new URLSearchParams(window.location.search);
+                const clientId = urlParams.get('id');
+                loadState("state");
+                if (!clientId) {
+                    console.error("No client ID found in URL");
+                    return;
+                }
+
+                try {
+                    const response = await axios.get(`/marketing/getClientDetails/${clientId}`);
+
+                    if (response.data.success) {
+                        const client = response.data.data;
+
+                        // Update text fields
+                        document.querySelector("#clientName").textContent = client.clientName || 'N/A';
+                        document.querySelector("#clientType").textContent = client.clientType ?
+                            client.clientType.charAt(0).toUpperCase() + client.clientType.slice(1) : 'N/A';
+                        document.querySelector("#phoneNumber").textContent = client.phoneNumber || 'N/A';
+                        document.querySelector("#secondaryPhone").textContent = client.secondaryPhone || 'N/A';
+                        document.querySelector("#email").textContent = client.email || 'N/A';
+                        document.querySelector("#registrationDate").textContent = client.registrationDate || 'N/A';
+                        document.querySelector("#clientCategory").textContent = client.clientCategory ?
+                            client.clientCategory.charAt(0).toUpperCase() + client.clientCategory.slice(1) : 'N/A';
+                        document.querySelector("#clientSource").textContent = client.clientSource ?
+                            client.clientSource.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'N/A';
+                        document.querySelector("#preferredContact").textContent = client.preferredContact ?
+                            client.preferredContact.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'N/A';
+                        document.querySelector("#preferredTime").textContent = client.preferredTime ?
+                            client.preferredTime.charAt(0).toUpperCase() + client.preferredTime.slice(1) : 'Any Time';
+                        document.querySelector("#gstNumber").textContent = client.gstNumber || 'N/A';
+                        document.querySelector("#panNumber").textContent = client.panNumber || 'N/A';
+                        document.querySelector("#address").textContent =
+                            `${client.address1 || ''} ${client.address2 ? ', ' + client.address2 : ''}`.trim() || 'N/A';
+                        document.querySelector("#stateCity").textContent =
+                            `${client.state || ''}${client.city ? ', ' + client.city : ''}`.trim() || 'N/A';
+                        document.querySelector("#postalCode").textContent = client.postalCode || 'N/A';
+                        document.querySelector("#internalNotes").textContent = client.internalNotes || 'N/A';
+
+                        // Update POC details
+                        const pocContainer = document.getElementById("pocDetails");
+                        pocContainer.innerHTML = "";
+                        if (Array.isArray(client.pocDetails) && client.pocDetails.length > 0) {
+                            client.pocDetails.forEach(poc => {
+                                const pocItem = document.createElement("div");
+                                pocItem.className = "poc-item";
+                                pocItem.innerHTML = `
+                                    <p><strong>${poc.name || 'N/A'}</strong></p>
+                                    <p>Designation: ${poc.designation || 'N/A'}</p>
+                                    <p>Contact: ${poc.contact || 'N/A'}</p>
+                                `;
+                                pocContainer.appendChild(pocItem);
+                            });
+                        } else {
+                            pocContainer.innerHTML = "<p>N/A</p>";
+                        }
+
+                        // Update service details
+                        const serviceContainer = document.getElementById("serviceDetails");
+                        serviceContainer.innerHTML = "";
+                        if (Array.isArray(client.serviceDetails) && client.serviceDetails.length > 0) {
+                            client.serviceDetails.forEach(service => {
+                                const serviceItem = document.createElement("div");
+                                serviceItem.className = "poc-item";
+                                serviceItem.innerHTML = `
+                                    <p><strong>${service.service || 'N/A'}</strong></p>
+                                    <p>Date: ${service.serviceDate || 'N/A'}</p>
+                                `;
+                                serviceContainer.appendChild(serviceItem);
+                            });
+                        } else {
+                            serviceContainer.innerHTML = "<p>N/A</p>";
+                        }
+
+                        // Update client status with badge
+                        const clientStatusElem = document.querySelector("#clientStatus");
+                        const statusColors = {
+                            "prospect": "info",
+                            "active": "success",
+                            "inactive": "secondary",
+                            "blacklisted": "danger"
+                        };
+                        const statusColor = statusColors[client.clientStatus] || "primary";
+                        clientStatusElem.innerHTML = `<span class="badge bg-${statusColor}">${client.clientStatus ? client.clientStatus.charAt(0).toUpperCase() + client.clientStatus.slice(1) : 'N/A'
+                            }</span>`;
+
+                        // Update priority with badge
+                        const clientPriorityElem = document.querySelector("#clientPriority");
+                        const priorityColors = {
+                            "vip": "danger",
+                            "high": "warning",
+                            "medium": "primary",
+                            "low": "info"
+                        };
+                        const priorityColor = priorityColors[client.priority] || "dark";
+                        clientPriorityElem.innerHTML = `<span class="badge bg-${priorityColor}">${client.priority ? client.priority.charAt(0).toUpperCase() + client.priority.slice(1) : 'N/A'
+                            }</span>`;
+
+                    } else {
+                        console.error("Failed to fetch client details:", response.data.message);
+                    }
+
+                } catch (error) {
+                    console.error("Error fetching client details:", error);
+                }
+
+                // Load team members dropdown
+                await loadTeamMembers();
+
+                // Load initial data for tabs
+                if (clientId) {
+                    loadInteractions(clientId);
+                    // loadServices(clientId);
+                    loadAssignedTeam(clientId);
+                    loadDocuments(clientId);
+                    loadFollowUps(clientId);
+                }
+
+                // Form submission handlers
+                document.getElementById("interactionForm").addEventListener("submit", async function (event) {
+                    event.preventDefault();
+                    await handleInteractionFormSubmit(clientId);
+                });
+                document.getElementById("followUpForm").addEventListener("submit", async function (event) {
+                    event.preventDefault();
+                    await handleFolloUpFormSubmit(clientId);
+                });
+
+                document.getElementById("serviceForm").addEventListener("submit", async function (event) {
+                    event.preventDefault();
+                    await handleServiceFormSubmit(clientId);
+                });
+
+                document.getElementById("assignTeamForm").addEventListener("submit", async function (event) {
+                    event.preventDefault();
+                    await handleTeamAssignment(clientId);
+                });
+
+                document.getElementById("documentForm").addEventListener("submit", async function (event) {
+                    event.preventDefault();
+                    await handleDocumentUpload(clientId);
+                });
+
+                function fetchClientLeads(clientId) {
+                    $.ajax({
+                        url: `/marketing/client_leads/${clientId}`,
+                        method: 'GET',
+                        dataType: 'json',
+                        success: function (response) {
+                            if (response.success) {
+                                const leads = response.data;
+                                let tableRows = '';
+
+                                if (leads.length === 0) {
+                                    tableRows = '<tr><td colspan="10" class="text-center">No leads found for this client.</td></tr>';
+                                } else {
+                                    leads.forEach(lead => {
+                                        tableRows += `
+                            <tr>
+                                <td>${lead.id}</td>
+                                <td>
+                                    <button type="button" class="btn btn-primary p-2" onclick="trackLeads(${lead.id})">
+                                        <i class="bx bx-map"></i> 
+                                    </button>
+                                </td>
+                                <td>${lead.event_type}</td>
+                                <td>${lead.venue}</td>
+                                <td>${lead.event_date}</td>
+                                <td>${lead.lead_source}</td>
+                                <td>
+                                    <select class="form-control lead-status-dropdown" data-lead-id="${lead.id}">
+                                        <option value="new" ${lead.lead_status === 'new' ? 'selected' : ''}>New</option>
+                                        <option value="in_progress" ${lead.lead_status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                        <option value="follow_up" ${lead.lead_status === 'follow_up' ? 'selected' : ''}>Follow-Up</option>
+                                        <option value="closed_won" ${lead.lead_status === 'closed_won' ? 'selected' : ''}>Closed Won</option>
+                                        <option value="closed_lost" ${lead.lead_status === 'closed_lost' ? 'selected' : ''}>Closed Lost</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select class="form-control lead-priority-dropdown" data-lead-id="${lead.id}">
+                                        <option value="vip" ${lead.priority === 'vip' ? 'selected' : ''}>VIP</option>
+                                        <option value="high" ${lead.priority === 'high' ? 'selected' : ''}>High</option>
+                                        <option value="medium" ${lead.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                                        <option value="low" ${lead.priority === 'low' ? 'selected' : ''}>Low</option>
+                                        <option value="urgent" ${lead.priority === 'urgent' ? 'selected' : ''}>Urgent</option>
+                                    </select>
+                                </td>
+                                <td>${lead.next_followup || 'N/A'}</td>
+                                <td>${lead.createdBy}</td>
+                                <td>${new Date(lead.createdAt).toLocaleDateString()}</td>
+                            </tr>
+                        `;
+                                    });
+                                }
+
+                                $('#leadsTableBody').html(tableRows);
+                            }
+                        },
+                        error: function (err) {
+                            console.error('Error fetching leads:', err);
+                        }
+                    });
+                }
+
+                document.addEventListener("change", async function (event) {
+                    if (event.target.classList.contains("lead-status-dropdown")) {
+                        const leadId = event.target.dataset.leadId;
+                        const newStatus = event.target.value;
+
+                        try {
+                            const response = await axios.put(`/marketing/update-lead-status/${leadId}`, { lead_status: newStatus });
+                            if (response.status === 200) {
+                                alert("Lead status updated successfully!");
+                            }
+                        } catch (error) {
+                            console.error("Error updating lead status:", error);
+                            alert("An error occurred while updating the lead status.");
+                        }
+                    }
+
+                    if (event.target.classList.contains("lead-priority-dropdown")) {
+                        const leadId = event.target.dataset.leadId;
+                        const newPriority = event.target.value;
+
+                        try {
+                            const response = await axios.put(`/marketing/update-lead-priority/${leadId}`, { priority: newPriority });
+                            if (response.status === 200) {
+                                alert("Lead priority updated successfully!");
+                            }
+                        } catch (error) {
+                            console.error("Error updating lead priority:", error);
+                            alert("An error occurred while updating the lead priority.");
+                        }
+                    }
+                });
+
+
+                fetchClientLeads(clientId);
+            });
+            // Example usage: Call fetchClientLeads with a specific client ID (replace `123` with actual client ID)
+            function trackLeads(id) {
+                window.location.href = `/marketing/track-lead?id=${id}`
+            }
+            async function loadTeamMembers() {
+                try {
+                    const response = await axios.get("/marketing/teamMembers");
+                    const select = document.getElementById("team_member");
+                    select.innerHTML = "";
+
+                    response.data.forEach(member => {
+                        const option = document.createElement("option");
+                        option.value = member.id;
+                        option.textContent = `${member.name} (${member.username})`;
+                        option.setAttribute("data-username", member.username);
+                        option.setAttribute("data-name", member.name);
+                        select.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error("Error loading team members:", error);
+                }
+            }
+
+
+         // Helper function to get light background colors for each status
+function getStatusColor(status) {
+    switch (status) {
+        case 'Pending':
+            return '#fff9c4'; // Light Yellow
+        case 'In Progress':
+            return '#bbdefb'; // Light Blue
+        case 'Completed':
+            return '#c8e6c9'; // Light Green
+        case 'Closed':
+            return '#e0e0e0'; // Light Gray
+        default:
+            return '#ffffff'; // White as default
+    }
+}
+
+// Function to load follow-ups and render a dropdown for status update with light colors
+async function loadFollowUps(clientId) {
+    try {
+        const response = await axios.get(`/marketing/client-followups/${clientId}`);
+        const tbody = document.querySelector("#followupTableBody"); // Ensure your table body has this ID
+        tbody.innerHTML = "";
+        
+        // Check if there are any follow-ups returned
+        if (!response.data.data || response.data.data.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='4' class='text-center'>No follow-ups found</td></tr>";
+            return;
+        }
+        
+        // Loop through each follow-up and create a table row
+        response.data.data.forEach(followUp => {
+            // Get the light color for the current status
+            const statusColor = getStatusColor(followUp.status);
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${new Date(followUp.nextFollowUpTime).toLocaleString()}</td>
+                <td>${followUp.remark || 'N/A'}</td>
+                <td>
+                    <select 
+                        class="form-control followup-status-dropdown" 
+                        data-followup-id="${followUp.id}"
+                        style="background-color: ${statusColor}; color: #000;"
+                    >
+                        <option value="Pending" ${followUp.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="In Progress" ${followUp.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="Completed" ${followUp.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                        <option value="Closed" ${followUp.status === 'Closed' ? 'selected' : ''}>Closed</option>
+                    </select>
+                </td>
+                <td>${followUp.empName} (${followUp.username})</td>
+            `;
+            tbody.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Error loading follow-ups:", error);
+        document.querySelector("#followupTableBody").innerHTML = 
+            "<tr><td colspan='4' class='text-center text-danger'>Error loading follow-ups</td></tr>";
+    }
+}
+
+// Global event listener for updating follow-up status and updating the dropdown color
+document.addEventListener("change", async function (event) {
+    if (event.target.classList.contains("followup-status-dropdown")) {
+        const followUpId = event.target.dataset.followupId;
+        const newStatus = event.target.value;
+
+        // Update the background color immediately based on the new status using light colors
+        const newColor = getStatusColor(newStatus);
+        event.target.style.backgroundColor = newColor;
+        event.target.style.color = '#000';
+
+        try {
+            const response = await axios.put(`/marketing/update-followup-status/${followUpId}`, { status: newStatus });
+            if (response.status === 200) {
+                alert("Follow-up status updated successfully!");
+            }
+        } catch (error) {
+            console.error("Error updating follow-up status:", error);
+            alert("An error occurred while updating the follow-up status.");
+        }
+    }
+});
+
+            async function loadInteractions(clientId) {
+                try {
+                    const response = await axios.get(`/marketing/client-interactions/${clientId}`);
+                    const tbody = document.getElementById("interactionsTableBody");
+                    tbody.innerHTML = "";
+
+                    if (response.data.data.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='5' class='text-center'>No interactions found</td></tr>";
+                        return;
+                    }
+
+                    response.data.data.forEach(interaction => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${new Date(interaction.interaction_date).toLocaleString()}</td>
+                            <td>${interaction.interaction_type}</td>
+                            <td>${interaction.notes}</td>
+                            <td><span class="badge bg-${getOutcomeBadgeClass(interaction.outcome)}">
+                                ${interaction.outcome.charAt(0).toUpperCase() + interaction.outcome.slice(1)}
+                            </span></td>
+                              <td>${interaction.leadGenerated}</td>
+                            <td>${interaction.empName}(${interaction.username})</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error("Error loading interactions:", error);
+                    document.getElementById("interactionsTableBody").innerHTML =
+                        "<tr><td colspan='5' class='text-center text-danger'>Error loading interactions</td></tr>";
+                }
+            }
+
+            async function loadServices(clientId) {
+                try {
+                    const response = await axios.get(`/marketing/${clientId}/services`);
+                    const tbody = document.getElementById("servicesTableBody");
+                    tbody.innerHTML = "";
+
+                    if (response.data.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='4' class='text-center'>No services found</td></tr>";
+                        return;
+                    }
+
+                    response.data.forEach(service => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${new Date(service.service_date).toLocaleDateString()}</td>
+                            <td>${service.service_type}</td>
+                            <td>${service.service_details}</td>
+                            <td><span class="badge bg-${getStatusBadgeClass(service.status)}">
+                                ${service.status.charAt(0).toUpperCase() + service.status.slice(1)}
+                            </span></td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error("Error loading services:", error);
+                    document.getElementById("servicesTableBody").innerHTML =
+                        "<tr><td colspan='4' class='text-center text-danger'>Error loading services</td></tr>";
+                }
+            }
+
+            async function loadAssignedTeam(clientId) {
+                try {
+                    const response = await axios.get(`/marketing/client-team/${clientId}`);
+                    const list = document.getElementById("assignedTeamList");
+                    list.innerHTML = "";
+
+                    if (response.data.data.length === 0) {
+                        list.innerHTML = "<div class='list-group-item text-center'>No team members assigned</div>";
+                        return;
+                    }
+
+                    response.data.data.forEach(member => {
+                        const item = document.createElement("div");
+                        item.className = "list-group-item";
+                        item.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">${member.team_member_name} (${member.team_member_username})</h6>
+                                    <small class="text-muted">${member.role}</small>
+                                </div>
+                                <button class="btn btn-sm btn-outline-danger" onclick="removeTeamMember(${member.id}, '${clientId}')">
+                                    Remove
+                                </button>
+                            </div>
+                        `;
+                        list.appendChild(item);
+                    });
+                } catch (error) {
+                    console.error("Error loading assigned team:", error);
+                    document.getElementById("assignedTeamList").innerHTML =
+                        "<div class='list-group-item text-center text-danger'>Error loading team assignments</div>";
+                }
+            }
+
+            async function loadDocuments(clientId) {
+                try {
+                    const response = await axios.get(`/marketing/client-documents/${clientId}`);
+                    const tbody = document.getElementById("documentsTableBody");
+                    tbody.innerHTML = "";
+
+                    if (response.data.data.length === 0) {
+                        tbody.innerHTML = "<tr><td colspan='4' class='text-center'>No documents found</td></tr>";
+                        return;
+                    }
+
+                    response.data.data.forEach(doc => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${new Date(doc.upload_date).toLocaleDateString()}</td>
+                            <td>${doc.document_type}</td>
+                            <td>${doc.description || 'N/A'}</td>
+                            <td><a href="/MyUploads/${doc.file_path}" target="_blank">View</a></td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } catch (error) {
+                    console.error("Error loading documents:", error);
+                    document.getElementById("documentsTableBody").innerHTML =
+                        "<tr><td colspan='4' class='text-center text-danger'>Error loading documents</td></tr>";
+                }
+            }
+
+            async function handleFolloUpFormSubmit(clientId) {
+                const form = document.getElementById("followUpForm");
+                const formData = new FormData(form);
+                formData.append("client_id", clientId);
+                try {
+                    const response = await axios.post(`/marketing/client-followup`, Object.fromEntries(formData));
+                    if (response.status === 200) {
+                        alert("Follow Up logged successfully!");
+                        form.reset();
+                        loadFollowUps(clientId);
+                    }
+                } catch (error) {
+                    console.error("Error logging follow Up:", error);
+                    alert("Failed to log follow Up. Please try again.");
+                }
+            }
+
+
+            async function handleInteractionFormSubmit(clientId) {
+                const form = document.getElementById("interactionForm");
+                const formData = new FormData(form);
+                formData.append('client_id', clientId)
+                try {
+                    const response = await axios.post(`/marketing/client-interactions`, Object.fromEntries(formData));
+                    if (response.status === 200) {
+                        alert("Interaction logged successfully!");
+                        form.reset();
+                        loadInteractions(clientId);
+
+                        document.getElementById("leadFormContainer").style.display = "none";
+
+                    }
+                } catch (error) {
+                    console.error("Error logging interaction:", error);
+                    alert("Failed to log interaction. Please try again.");
+                }
+            }
+
+            async function handleServiceFormSubmit(clientId) {
+                const form = document.getElementById("serviceForm");
+                const formData = new FormData(form);
+
+                try {
+                    const response = await axios.post(`/marketing/${clientId}/services`, Object.fromEntries(formData));
+                    if (response.status === 200) {
+                        alert("Service added successfully!");
+                        form.reset();
+                        loadServices(clientId);
+                    }
+                } catch (error) {
+                    console.error("Error adding service:", error);
+                    alert("Failed to add service. Please try again.");
+                }
+            }
+
+            async function handleTeamAssignment(clientId, appId) {
+                const form = document.getElementById("assignTeamForm");
+                const formData = new FormData(form);
+
+                const selectedOption = document.querySelector("#team_member option:checked");
+                const teamMemberUsername = selectedOption.getAttribute("data-username");
+                const teamMemberName = selectedOption.getAttribute("data-name");
+
+
+                // Construct the data object to match your Sequelize model
+                const requestData = {
+                    app_id: appId,
+                    client_id: clientId,
+                    team_member_username: teamMemberUsername,
+                    team_member_name: teamMemberName,
+                    role: formData.get("role"),
+                };
+
+                try {
+                    const response = await axios.post(`/marketing/client-team`, requestData);
+                    if (response.status === 200) {
+                        alert("Team member assigned successfully!");
+                        form.reset();
+                        loadAssignedTeam(clientId);
+                    }
+                } catch (error) {
+                    console.error("Error assigning team member:", error);
+                    alert("Failed to assign team member. Please try again.");
+                }
+            }
+
+            async function handleDocumentUpload(clientId) {
+                const form = document.getElementById("documentForm");
+                const formData = new FormData(form);
+                formData.append('client_id', clientId)
+
+                try {
+                    const response = await axios.post(`/marketing/client-documents`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                    if (response.status === 200) {
+                        alert("Document uploaded successfully!");
+                        form.reset();
+                        loadDocuments(clientId);
+                    }
+                } catch (error) {
+                    console.error("Error uploading document:", error);
+                    alert("Failed to upload document. Please try again.");
+                }
+            }
+
+            function getOutcomeBadgeClass(outcome) {
+                const outcomeClasses = {
+                    "positive": "success",
+                    "neutral": "info",
+                    "negative": "danger"
+                };
+                return outcomeClasses[outcome] || "secondary";
+            }
+
+            function getStatusBadgeClass(status) {
+                const statusClasses = {
+                    "planned": "info",
+                    "in-progress": "warning",
+                    "completed": "success",
+                    "cancelled": "danger"
+                };
+                return statusClasses[status] || "secondary";
+            }
+
+            async function removeTeamMember(assignmentId, clientId) {
+                if (!confirm("Are you sure you want to remove this team member from the client?")) return;
+
+                try {
+                    const response = await axios.delete(`/marketing/client-team/${clientId}/team/${assignmentId}`);
+                    if (response.data.success) {
+                        alert("Team member removed successfully!");
+                        loadAssignedTeam(clientId);
+                    } else {
+                        alert(response.data.message || "Failed to remove team member");
+                    }
+                } catch (error) {
+                    console.error("Error removing team member:", error);
+                    alert(error.response?.data?.message || "Failed to remove team member. Please try again.");
+                }
+            }
+
+        </script>
+</body>
+
+</html>

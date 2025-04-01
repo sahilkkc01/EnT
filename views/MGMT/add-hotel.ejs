@@ -130,7 +130,7 @@
                             <div id="loadingIndicator"></div>
                             <div class="mt-4">
                                 <button type="submit" class="btn btn-primary me-3">Save</button>
-                                <button type="reset" onclick="window.location.href = '/hotels'" class="btn btn-outline-secondary">Cancel</button>
+                                <button type="reset" onclick="window.location.href = '/management/hotels'" class="btn btn-outline-secondary">Cancel</button>
                             </div>
                         </form>
                     </div>
@@ -143,10 +143,8 @@
 <%- include('../footer') -%>
 
 <script>
-$(document).ready(function () {
- 
-    console.log("Document Ready");
-
+    $(document).ready(async function () {
+        
     // Handle Room Type Addition
     $("#addRoomType").on("click", function () {
         $("#roomTypesContainer").append(`
@@ -179,75 +177,148 @@ $(document).ready(function () {
     $(document).on("click", ".remove-contact", function () {
         $(this).parent().remove();
     });
+    console.log("Document Ready");
 
-    const formId = "#HotelForm"; // Form ID
-    const errorDivId = "#errordiv"; // Error message container
-    const loadingDiv = "#loadingIndicator"; // Loading indicator
-    const submitUrl = "/management/hotelReg"; // API endpoint
-    $(formId).on("submit", async function (event) {
-    event.preventDefault(); // Prevent default form submission
+    const formId = "#HotelForm";
+    const errorDivId = "#errordiv";
+    const loadingDiv = "#loadingIndicator";
+    const baseUrl = "/management/hotelReg";
+    const urlParams = new URLSearchParams(window.location.search);
+    const hotelId = urlParams.get("id"); // Get 'id' from URL params
 
-    const { isValid, errorMessage } = validateForm(formId); // Validate form
-    if (!isValid) {
-        $(errorDivId).removeClass("alert-success").addClass("alert-danger").text(errorMessage).show();
-        return;
-    }
-
-    const formData = new FormData(this);
-    
-    // Convert room types into key-value pairs
-    const roomTypes = [];
-    const roomTypeInputs = $("input[name='roomType[]']");
-    const roomCountInputs = $("input[name='roomCount[]']");
-    
-    roomTypeInputs.each((index, element) => {
-        roomTypes.push({
-            type: $(element).val(),
-            count: roomCountInputs.eq(index).val()
-        });
-    });
-
-    // Convert contacts into key-value pairs
-    const contacts = [];
-    const contactTypeInputs = $("input[name='contactType[]']");
-    const contactNameInputs = $("input[name='contactName[]']");
-    const contactNumberInputs = $("input[name='contactNumber[]']");
-
-    contactTypeInputs.each((index, element) => {
-        contacts.push({
-            type: $(element).val(),
-            name: contactNameInputs.eq(index).val(),
-            number: contactNumberInputs.eq(index).val()
-        });
-    });
-
-    // Remove existing FormData values for these fields
-    formData.delete("roomType[]");
-    formData.delete("roomCount[]");
-    formData.delete("contactType[]");
-    formData.delete("contactName[]");
-    formData.delete("contactNumber[]");
-
-    // Append structured data to FormData
-    formData.append("roomTypes", JSON.stringify(roomTypes));
-    formData.append("contacts", JSON.stringify(contacts));
-
+    if (hotelId) {
     try {
-        $(loadingDiv).show(); // Show loading indicator
+        $(loadingDiv).show();
+        const response = await axios.get(`/management/hotels/${hotelId}`);
+        const hotelData = response.data;
 
-        const response = await axios.post(submitUrl, formData, {
-            headers: { "Content-Type": "multipart/form-data" }
+        console.log("Fetched Hotel Data:", hotelData);
+
+        $("#hotelName").val(hotelData.hotelName);
+        $("#location").val(hotelData.location);
+        $("#starCategory").val(hotelData.starCategory);
+        $("#totalRooms").val(hotelData.totalRooms);
+        $("#eventVenue").val(hotelData.eventVenue);
+        $("#usp").val(hotelData.usp);
+
+        // **Wait until states are loaded, then set state**
+        await loadState("state",hotelData.state);
+        $("#state").trigger("change");
+      
+
+        // **Wait until cities are loaded, then set city**
+        setTimeout(() => {
+            $("#city").val(hotelData.city).trigger("change");
+        }, 500);
+
+        // Populate Room Types
+        $("#roomTypesContainer").empty();
+        hotelData.roomTypes.forEach((room) => {
+            $("#roomTypesContainer").append(`
+                <div class="d-flex mb-2">
+                    <input type="text" name="roomType[]" class="form-control me-2" value="${room.type}" placeholder="Room Type">
+                    <input type="number" name="roomCount[]" class="form-control me-2" value="${room.count}" placeholder="Count">
+                    <button type="button" class="btn btn-danger remove-room">X</button>
+                </div>
+            `);
         });
 
-        console.log("Success:", response);
-        $(errorDivId).removeClass("alert-danger").addClass("alert-success").text(response.data.message).show();
+        // Populate Contacts
+        $("#pointOfContactContainer").empty();
+        hotelData.contacts.forEach((contact) => {
+            $("#pointOfContactContainer").append(`
+                <div class="d-flex mb-2">
+                    <input type="text" name="contactType[]" class="form-control me-2" value="${contact.type}" placeholder="Type (e.g., Reception)">
+                    <input type="text" name="contactName[]" class="form-control me-2" value="${contact.name}" placeholder="Name">
+                    <input type="text" name="contactNumber[]" class="form-control me-2" value="${contact.number}" placeholder="Phone Number">
+                    <button type="button" class="btn btn-danger remove-contact">X</button>
+                </div>
+            `);
+        });
+
+        // Set Image Preview
+        if (hotelData.hotelImage) {
+            $("#previewImg").attr("src", `/MyUploads/${hotelData.hotelImage}`);
+            $("#imagePreview").removeClass("d-none");
+        }
+
     } catch (error) {
-        console.error("Error:", error);
-        $(errorDivId).removeClass("alert-success").addClass("alert-danger").text(error.response?.data?.message || "Unknown error").show();
+        console.error("Error fetching hotel data:", error);
     } finally {
-        $(loadingDiv).hide(); // Hide loading indicator
+        $(loadingDiv).hide();
     }
-});
+}else{
+    
+    loadState("state");
+}
+
+    // Handle Form Submission
+    $(formId).on("submit", async function (event) {
+        event.preventDefault();
+
+        const { isValid, errorMessage } = validateForm(formId);
+        if (!isValid) {
+            $(errorDivId).removeClass("alert-success").addClass("alert-danger").text(errorMessage).show();
+            return;
+        }
+
+        const formData = new FormData(this);
+
+        // Convert Room Types
+        const roomTypes = [];
+        $("input[name='roomType[]']").each((index, element) => {
+            roomTypes.push({
+                type: $(element).val(),
+                count: $("input[name='roomCount[]']").eq(index).val()
+            });
+        });
+
+        // Convert Contacts
+        const contacts = [];
+        $("input[name='contactType[]']").each((index, element) => {
+            contacts.push({
+                type: $(element).val(),
+                name: $("input[name='contactName[]']").eq(index).val(),
+                number: $("input[name='contactNumber[]']").eq(index).val()
+            });
+        });
+
+        formData.append("roomTypes", JSON.stringify(roomTypes));
+        formData.append("contacts", JSON.stringify(contacts));
+
+        try {
+            $(loadingDiv).show();
+            let response;
+            
+            if (hotelId) {
+                // If updating, use PUT request
+                response = await axios.put(`${baseUrl}/${hotelId}`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+            } else {
+                // If adding new, use POST request
+                response = await axios.post(baseUrl, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+            }
+
+            console.log("Success:", response);
+            $(errorDivId).removeClass("alert-danger").addClass("alert-success").text(response.data.message).show();
+               // Redirect after successful update
+    setTimeout(() => {
+        window.location.href = "/management/hotels";
+    }, 1500); // Delay to show success message
+        } catch (error) {
+          
+            console.error("Error:", error);
+            $(errorDivId).removeClass("alert-success").addClass("alert-danger").text(error.response?.data?.message || "Unknown error").show();
+        } finally {
+            $(loadingDiv).hide();
+        }
+    });
+
+    // Load States & Cities
+    
 
     // Image Preview
     $("#hotelImage").on("change", function (event) {
@@ -271,11 +342,7 @@ $(document).ready(function () {
             $(this).val("");
         }
     });
-
-    
-    loadState('state');
 });
-
 
 </script>
 
