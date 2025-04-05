@@ -80,75 +80,77 @@
     </div>
     <%- include('../footer') -%>
 
-    <script>
-        let stateMap = {};
-        let currentPage = 1;
-        const pageSize = 50;
+        <script>
+            let stateMap = {};
+            let currentPage = 1;
+            const pageSize = 50;
 
-        document.addEventListener("DOMContentLoaded", async function () {
-            await loadState("stateFilter");
-            loadClients(currentPage);
+            document.addEventListener("DOMContentLoaded", async function () {
+                await loadState("stateFilter");
+                loadClients(currentPage);
 
-            document.getElementById("stateFilter").addEventListener("change", function () {
-                loadCity(this, "cityFilter");
-                filterClients();
-            });
-            document.getElementById("cityFilter").addEventListener("change", filterClients);
-            document.getElementById("nameFilter").addEventListener("input", filterClients);
-            document.getElementById("statusFilter").addEventListener("change", filterClients);
-            document.getElementById("priorityFilter").addEventListener("change", filterClients);
-            document.getElementById("clientTypeFilter").addEventListener("change", filterClients);
-        });
-
-        async function loadState(selectId) {
-            try {
-                const response = await fetch('/getStates');
-                const states = await response.json();
-                const dropdown = document.getElementById(selectId);
-                dropdown.innerHTML = '<option value="">Select State</option>';
-                states.forEach(state => {
-                    stateMap[state.stateCode] = state.stateName;
-                    const option = document.createElement('option');
-                    option.value = state.stateCode;
-                    option.textContent = state.stateName;
-                    dropdown.appendChild(option);
+                document.getElementById("stateFilter").addEventListener("change", function () {
+                    loadCity(this, "cityFilter");
+                    filterClients();
                 });
-            } catch (error) {
-                console.error('Error fetching states:', error);
+                document.getElementById("cityFilter").addEventListener("change", filterClients);
+                document.getElementById("nameFilter").addEventListener("input", filterClients);
+                document.getElementById("statusFilter").addEventListener("change", filterClients);
+                document.getElementById("priorityFilter").addEventListener("change", filterClients);
+                document.getElementById("clientTypeFilter").addEventListener("change", filterClients);
+            });
+
+            async function loadState(selectId) {
+                try {
+                    const response = await fetch('/getStates');
+                    const states = await response.json();
+                    const dropdown = document.getElementById(selectId);
+                    dropdown.innerHTML = '<option value="">Select State</option>';
+                    states.forEach(state => {
+                        stateMap[state.stateCode] = state.stateName;
+                        const option = document.createElement('option');
+                        option.value = state.stateCode;
+                        option.textContent = state.stateName;
+                        dropdown.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error fetching states:', error);
+                }
             }
-        }
 
-        async function loadClients(page) {
-            try {
-                const response = await axios.get(`/marketing/get-clients?page=${page}&limit=${pageSize}`);
-                const { clients, totalClients, totalPages } = response.data;
-                
-                const tbody = document.getElementById("clientsTbody");
-                tbody.innerHTML = "";
-                
-                clients.forEach(client => {
-                    const row = document.createElement("tr");
-                    row.dataset.clientId = client.id;
-                    row.dataset.state = client.state;
-                    row.dataset.city = client.city;
-                    row.dataset.clientName = client.clientName.toLowerCase();
-                    row.dataset.clientStatus = client.clientStatus.toLowerCase();
-                    row.dataset.priority = client.priority.toLowerCase();
-                    row.dataset.clientType = client.clientType.toLowerCase();
+            async function loadClients(page) {
+                try {
+                    const response = await axios.get(`/marketing/get-clients?page=${page}&limit=${pageSize}`);
+                    const { clients, totalClients, totalPages } = response.data;
 
-                    row.innerHTML = `
+                    const tbody = document.getElementById("clientsTbody");
+                    tbody.innerHTML = "";
+                    console.log(clients);
+
+
+                    clients.forEach(client => {
+                        const row = document.createElement("tr");
+                        row.dataset.clientId = client.id;
+                        row.dataset.state = client.state;
+                        row.dataset.city = client.city;
+                        row.dataset.clientName = client?.clientName?.toLowerCase();
+                        row.dataset.clientStatus = client?.clientStatus?.toLowerCase();
+                        row.dataset.priority = client?.priority?.toLowerCase();
+                        row.dataset.clientType = client?.clientType?.toLowerCase();
+
+                        row.innerHTML = `
                         <td>${client.id}</td>
                         <td>
     <button type="button" class="btn btn-primary p-2" onclick="trackClient(${client.id})">
         <i class="bx bx-map"></i> 
     </button>
 </td>
-                        <td>${client.registrationDate}</td>
+                        <td>${client.registrationDate === null ? "N/A" : client.registrationDate}</td>
                         <td>${client.clientName}</td>
-                        <td>${client.clientType.charAt(0).toUpperCase() + client.clientType.slice(1)}</td>
-                        <td>${stateMap[client.state] || "Unknown"}</td>
+                        <td>${client?.clientType?.charAt(0)?.toUpperCase() + client?.clientType?.slice(1)}</td>
+                        <td>${stateMap[client?.state] || "N/A"}</td>
                         <td>${client.city || 'N/A'}</td>
-                        <td>${client.phoneNumber}<br>${client.email}</td>
+                        <td>${client.phoneNumber || 'N/A'}<br>${client.email || 'N/A'}</td>
                         
                         <!-- Client Status Dropdown -->
                         <td>
@@ -170,7 +172,7 @@
                             </select>
                         </td>
 
-                        <td>${client.clientCategory.charAt(0).toUpperCase() + client.clientCategory.slice(1)}</td>
+                        <td>${client?.clientCategory?.charAt(0)?.toUpperCase() + client?.clientCategory?.slice(1)}</td>
 
                         <td>
     <a class="btn p-0" href="/marketing/add-client?id=${client.id}">
@@ -182,101 +184,102 @@
 
 
                     `;
-                    tbody.appendChild(row);
-                });
+                        tbody.appendChild(row);
+                    });
 
-                updatePaginationControls(totalClients, totalPages);
-            } catch (error) {
-                console.error("Error fetching clients data:", error);
+                    updatePaginationControls(totalClients, totalPages);
+                } catch (error) {
+                    console.error("Error fetching clients data:", error);
+                }
             }
-        }
-        function trackClient(id){
-            window.location.href=`/marketing/track-client?id=${id}`
-        }
-        function updatePaginationControls(totalClients, totalPages) {
-            const paginationDiv = document.getElementById("paginationControls");
-            paginationDiv.innerHTML = `
+            function trackClient(id) {
+                window.location.href = `/marketing/track-client?id=${id}`
+            }
+            function updatePaginationControls(totalClients, totalPages) {
+                const paginationDiv = document.getElementById("paginationControls");
+                paginationDiv.innerHTML = `
                 <button id="prevPage" ${currentPage === 1 ? "disabled" : ""}>Prev</button>
                 Page ${currentPage} of ${totalPages}
                 <button id="nextPage" ${currentPage >= totalPages ? "disabled" : ""}>Next</button>
             `;
 
-            setTimeout(() => {
-                document.getElementById("prevPage")?.addEventListener("click", function () {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        loadClients(currentPage);
-                    }
+                setTimeout(() => {
+                    document.getElementById("prevPage")?.addEventListener("click", function () {
+                        if (currentPage > 1) {
+                            currentPage--;
+                            loadClients(currentPage);
+                        }
+                    });
+
+                    document.getElementById("nextPage")?.addEventListener("click", function () {
+                        if (currentPage < totalPages) {
+                            currentPage++;
+                            loadClients(currentPage);
+                        }
+                    });
+                }, 100);
+            }
+
+            function filterClients() {
+                const state = document.getElementById("stateFilter").value.toLowerCase();
+                const city = document.getElementById("cityFilter").value.toLowerCase();
+                const name = document.getElementById("nameFilter").value.toLowerCase();
+                const status = document.getElementById("statusFilter").value.toLowerCase();
+                const priority = document.getElementById("priorityFilter").value.toLowerCase();
+                const clientType = document.getElementById("clientTypeFilter").value.toLowerCase();
+
+                document.querySelectorAll("#clientsTable tbody tr").forEach(row => {
+                    const rowState = row.dataset.state?.toLowerCase() || "";
+                    const rowCity = row.dataset.city?.toLowerCase() || "";
+                    const clientName = row.dataset.clientName?.toLowerCase() || "";
+                    const clientStatus = row.dataset.clientStatus?.toLowerCase() || "";
+                    const clientPriority = row.dataset.priority?.toLowerCase() || "";
+                    const rowClientType = row.dataset.clientType?.toLowerCase() || "";
+
+                    let show = true;
+                    if (state && rowState !== state) show = false;
+                    if (city && rowCity !== city) show = false;
+                    if (name && !clientName.includes(name)) show = false;
+                    if (status && clientStatus !== status) show = false;
+                    if (priority && clientPriority !== priority) show = false;
+                    if (clientType && rowClientType !== clientType) show = false;
+
+                    row.style.display = show ? "" : "none";
                 });
+            }
 
-                document.getElementById("nextPage")?.addEventListener("click", function () {
-                    if (currentPage < totalPages) {
-                        currentPage++;
-                        loadClients(currentPage);
+            document.addEventListener("change", async function (event) {
+                if (event.target.classList.contains("client-status-dropdown")) {
+                    const clientId = event.target.dataset.clientId;
+                    const newStatus = event.target.value;
+
+                    try {
+                        const response = await axios.put(`/marketing/update-client-status/${clientId}`, { clientStatus: newStatus });
+                        if (response.status === 200) {
+                            alert("Client status updated successfully!");
+                        }
+                    } catch (error) {
+                        console.error("Error updating status:", error);
+                        alert("An error occurred while updating the client status.");
                     }
-                });
-            }, 100);
-        }
+                }
 
-        function filterClients() {
-            const state = document.getElementById("stateFilter").value.toLowerCase();
-            const city = document.getElementById("cityFilter").value.toLowerCase();
-            const name = document.getElementById("nameFilter").value.toLowerCase();
-            const status = document.getElementById("statusFilter").value.toLowerCase();
-            const priority = document.getElementById("priorityFilter").value.toLowerCase();
-            const clientType = document.getElementById("clientTypeFilter").value.toLowerCase();
+                if (event.target.classList.contains("client-priority-dropdown")) {
+                    const clientId = event.target.dataset.clientId;
+                    const newPriority = event.target.value;
 
-            document.querySelectorAll("#clientsTable tbody tr").forEach(row => {
-                const rowState = row.dataset.state?.toLowerCase() || "";
-                const rowCity = row.dataset.city?.toLowerCase() || "";
-                const clientName = row.dataset.clientName?.toLowerCase() || "";
-                const clientStatus = row.dataset.clientStatus?.toLowerCase() || "";
-                const clientPriority = row.dataset.priority?.toLowerCase() || "";
-                const rowClientType = row.dataset.clientType?.toLowerCase() || "";
-
-                let show = true;
-                if (state && rowState !== state) show = false;
-                if (city && rowCity !== city) show = false;
-                if (name && !clientName.includes(name)) show = false;
-                if (status && clientStatus !== status) show = false;
-                if (priority && clientPriority !== priority) show = false;
-                if (clientType && rowClientType !== clientType) show = false;
-
-                row.style.display = show ? "" : "none";
+                    try {
+                        const response = await axios.put(`/marketing/update-client-priority/${clientId}`, { priority: newPriority });
+                        if (response.status === 200) {
+                            alert("Client priority updated successfully!");
+                        }
+                    } catch (error) {
+                        console.error("Error updating priority:", error);
+                        alert("An error occurred while updating the client priority.");
+                    }
+                }
             });
-        }
-
-        document.addEventListener("change", async function (event) {
-            if (event.target.classList.contains("client-status-dropdown")) {
-                const clientId = event.target.dataset.clientId;
-                const newStatus = event.target.value;
-
-                try {
-                    const response = await axios.put(`/marketing/update-client-status/${clientId}`, { clientStatus: newStatus });
-                    if (response.status === 200) {
-                        alert("Client status updated successfully!");
-                    }
-                } catch (error) {
-                    console.error("Error updating status:", error);
-                    alert("An error occurred while updating the client status.");
-                }
-            }
-
-            if (event.target.classList.contains("client-priority-dropdown")) {
-                const clientId = event.target.dataset.clientId;
-                const newPriority = event.target.value;
-
-                try {
-                    const response = await axios.put(`/marketing/update-client-priority/${clientId}`, { priority: newPriority });
-                    if (response.status === 200) {
-                        alert("Client priority updated successfully!");
-                    }
-                } catch (error) {
-                    console.error("Error updating priority:", error);
-                    alert("An error occurred while updating the client priority.");
-                }
-            }
-        });
-    </script>
+        </script>
 </body>
+
 </html>

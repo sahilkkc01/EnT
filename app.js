@@ -7,12 +7,11 @@ require("dotenv").config();
 
 const { con } = require("./db");
 
-const {router:EnT} = require('./routes/EnT')
-const {router:HR} = require('./routes/HR');
-const {router:Mgmt} = require('./routes/Mgmt');
-const {router:Marketing} = require('./routes/Marketing');
+const { router: EnT } = require("./routes/EnT");
+const { router: HR } = require("./routes/HR");
+const { router: Mgmt } = require("./routes/Mgmt");
+const { router: Marketing } = require("./routes/Marketing");
 const { authenticateUser } = require("./middleware/authentication");
-
 
 var app = express();
 
@@ -27,16 +26,16 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use((req, res, next) => {
-  if (["/","/login","/logoutFromEverywhere"].includes(req.path)) {
+  if (["/", "/login", "/logoutFromEverywhere"].includes(req.path)) {
     return next(); // Skip authentication for these routes
   }
   authenticateUser(req, res, next);
 });
 
-app.use("/",EnT);
-app.use("/hr",HR)
-app.use("/management",Mgmt)
-app.use("/marketing",Marketing)
+app.use("/", EnT);
+app.use("/hr", HR);
+app.use("/management", Mgmt);
+app.use("/marketing", Marketing);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -54,7 +53,7 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
-const PORT = 5002;
+const PORT = 5005;
 app.listen(PORT, async () => {
   console.log(`Server started at PORT ${PORT}`);
   await con();

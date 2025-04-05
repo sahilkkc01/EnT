@@ -1,7 +1,6 @@
 const { DataTypes, Sequelize } = require("sequelize");
 const { sequelize } = require("../db");
 
-
 const UserTokens = sequelize.define(
   "usertokens",
   {
@@ -146,4 +145,5 @@ const Company = sequelize.define(
 // VendorType.sync()
 // TransportType.sync()
 // Department.sync()
-module.exports = { Department, UserTokens ,TransportType,VendorType,Company}
+// sequelize.sync({ force: true });
+module.exports = { Department, UserTokens, TransportType, VendorType, Company };
