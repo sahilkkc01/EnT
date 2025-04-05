@@ -61,6 +61,7 @@
                 <th>Lead Source</th>
                 <th>Lead Status</th>
                 <th>Priority</th>
+                <th>Last Follow-Up</th>
                 <th>Next Follow-up</th>
                 <th>Created By</th>
              
@@ -164,6 +165,7 @@
                 <option value="urgent" ${lead.priority === "urgent" ? "selected" : ""}>Urgent</option>
               </select>
             </td>
+            <td>${lead.last_followup ? new Date(lead.last_followup).toLocaleString() : 'N/A'}</td>
             <td>${lead.next_followup ? new Date(lead.next_followup).toLocaleString() : 'N/A'}</td>
             <td>${lead.createdBy}</td>
            

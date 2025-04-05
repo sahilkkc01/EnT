@@ -34,7 +34,7 @@ router.get("/track-lead", function (req, res, next) {
   res.render("Marketing/lead-tracking");
 });
 router.get("/generate-invoice", function (req, res, next) {
-  res.render("Marketing/invoice-gen");
+  res.render("Marketing/Invoice-gen");
 });
 
 router.post('/saveClient',saveOrUpdateClient)

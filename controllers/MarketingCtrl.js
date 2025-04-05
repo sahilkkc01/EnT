@@ -934,6 +934,7 @@ exports.saveLeadFollowUp = async (req, res) => {
             return res.status(400).json({ success: false, message: "Missing required fields" });
         }
 
+        // Create a new lead follow-up record
         const followUp = await LeadFollowUp.create({
             app_id: appId,
             lead_id,
@@ -943,9 +944,19 @@ exports.saveLeadFollowUp = async (req, res) => {
             username
         });
 
+        // Update the `next_followup` field in the `Lead` table
+        const lead = await Lead.update(
+            { next_followup: nextFollowUpTime },
+            { where: { id: lead_id } }
+        );
+
+        if (!lead[0]) {
+            return res.status(404).json({ success: false, message: "Lead not found" });
+        }
+
         return res.status(200).json({ 
             success: true, 
-            message: "Lead follow-up saved successfully", 
+            message: "Lead follow-up saved and next follow-up updated successfully", 
             data: followUp 
         });
 
@@ -958,6 +969,7 @@ exports.saveLeadFollowUp = async (req, res) => {
         });
     }
 };
+
 
 exports.getLeadFollowUps = async (req, res) => {
     try {
@@ -1008,6 +1020,7 @@ exports.saveLeadInteraction = async (req, res) => {
             });
         }
 
+        // Create a new lead interaction record
         const interaction = await LeadInteraction.create({
             app_id: appId,
             lead_id,
@@ -1019,9 +1032,19 @@ exports.saveLeadInteraction = async (req, res) => {
             empName
         });
 
+        // Update the `last_followup` field in the `Lead` table
+        const lead = await Lead.update(
+            { last_followup: interaction_date }, 
+            { where: { id: lead_id } }
+        );
+
+        if (!lead[0]) {
+            return res.status(404).json({ success: false, message: "Lead not found" });
+        }
+
         return res.status(200).json({ 
             success: true, 
-            message: "Interaction logged successfully", 
+            message: "Interaction logged successfully and lead's last follow-up updated", 
             data: interaction 
         });
 
@@ -1034,6 +1057,7 @@ exports.saveLeadInteraction = async (req, res) => {
         });
     }
 };
+
 
 exports.getLeadInteractions = async (req, res) => {
     try {
