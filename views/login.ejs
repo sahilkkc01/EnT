@@ -171,14 +171,22 @@
     
           try {
             const response = await axios.post('/login', formData);
+            localStorage.setItem(
+      'userPermissions',
+      JSON.stringify(response.data.permissions)
+    );
     
+    // Store user info if needed
+    localStorage.setItem('user', JSON.stringify(response.data.user));
             // On successful login, redirect to patient registration
-            window.location.href = '/HR/employees';
+            window.location.href = '/marketing/clients';
           } catch (error) {
             handleLoginError(error);
           } finally {
+           
             toggleLoading(false);
           }
+          
         }
     
         // Function to handle login errors

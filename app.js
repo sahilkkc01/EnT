@@ -11,6 +11,7 @@ const { router: EnT } = require("./routes/EnT");
 const { router: HR } = require("./routes/HR");
 const { router: Mgmt } = require("./routes/Mgmt");
 const { router: Marketing } = require("./routes/Marketing");
+const { router: Sales } = require("./routes/Sales");
 const { authenticateUser } = require("./middleware/authentication");
 
 var app = express();
@@ -32,10 +33,12 @@ app.use((req, res, next) => {
   authenticateUser(req, res, next);
 });
 
+
 app.use("/", EnT);
 app.use("/hr", HR);
 app.use("/management", Mgmt);
 app.use("/marketing", Marketing);
+app.use("/sales", Sales);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -53,7 +56,7 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
-const PORT = 5005;
+const PORT = 5002;
 app.listen(PORT, async () => {
   console.log(`Server started at PORT ${PORT}`);
   await con();

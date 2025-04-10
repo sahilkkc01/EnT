@@ -3,7 +3,7 @@ var router = express.Router();
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
-const {  saveOrUpdateClient, getAllClients, updateClientStatus, updateClientPriority, getClientById, checkClient, getClientFollowUps, saveClientFollowUp, saveClientInteraction, getClientInteractions, getAllTeamMembers, assignClientTeamMember, getClientTeamAssignments, removeClientTeamMember, uploadClientDocument, getClientDocuments, getAllLeads, updateLeadStatus, updateLeadPriority, getLeadById, getLeadQuotations, createQuotation, saveLeadFollowUp, getLeadFollowUps, saveLeadInteraction, getLeadInteractions, assignLeadTeamMember, getLeadTeamAssignments, removeLeadTeamMember, saveLeadQuotation, updateQuotationStatus, getClientLeads, updateClientFollowUpStatus, updateLeadFollowUpStatus } = require('../controllers/MarketingCtrl');
+const {  saveOrUpdateClient, getAllClients, updateClientStatus, updateClientPriority, getClientById, checkClient, getClientFollowUps, saveClientFollowUp, saveClientInteraction, getClientInteractions, getAllTeamMembers, assignClientTeamMember, getClientTeamAssignments, removeClientTeamMember, uploadClientDocument, getClientDocuments, getAllLeads, updateLeadStatus, updateLeadPriority, getLeadById, getLeadQuotations, createQuotation, saveLeadFollowUp, getLeadFollowUps, saveLeadInteraction, getLeadInteractions, assignLeadTeamMember, getLeadTeamAssignments, removeLeadTeamMember, saveLeadQuotation, updateQuotationStatus, getClientLeads, updateClientFollowUpStatus, updateLeadFollowUpStatus, assignMarketingTeamMember, getMarketingTeamMembers, getSpecialMarketingDetails, updateMarketingTeamMember } = require('../controllers/MarketingCtrl');
 const { LeadFollowUp } = require('../models/MarketingSchema');
 JWT_SECRET=process.env.JWT_SECRET
 
@@ -35,6 +35,12 @@ router.get("/track-lead", function (req, res, next) {
 });
 router.get("/generate-invoice", function (req, res, next) {
   res.render("Marketing/Invoice-gen");
+});
+router.get("/team", function (req, res, next) {
+  res.render("Marketing/MarketingTeamList");
+});
+router.get("/assignteam", function (req, res, next) {
+  res.render("Marketing/MarketingTeam");
 });
 
 router.post('/saveClient',saveOrUpdateClient)
@@ -70,4 +76,9 @@ router.get("/client_leads/:clientId",getClientLeads)
 router.put("/quotations/:id", updateQuotationStatus);
 router.put("/update-client-followup-status/:id", updateClientFollowUpStatus);
 router.put("/update-lead-followup-status/:followUpId", updateLeadFollowUpStatus);
+
+router.post('/assign-employee',assignMarketingTeamMember)
+router.get('/team-members',getMarketingTeamMembers)
+router.get('/get-assignment/:id',getSpecialMarketingDetails)
+router.put('/update-assignment/:id',updateMarketingTeamMember)
 module.exports = {router};

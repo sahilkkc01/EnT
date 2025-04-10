@@ -1,0 +1,174 @@
+<!doctype html>
+<html
+  lang="en"
+  class="light-style layout-menu-fixed layout-compact"
+  dir="ltr"
+  data-theme="theme-default"
+  data-assets-path="../assets/"
+  data-template="vertical-menu-template-free"
+  data-style="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+  <title>Sales Team Members</title>
+
+  <%- include('../header') -%>
+  <style>
+    .scrollable-cell {
+        max-height: 100px;
+        overflow-y: auto;
+        padding-right: 8px;
+        white-space: normal !important; /* Add this line to override Bootstrap's text-nowrap */
+        word-wrap: break-word; /* Add for better text handling */
+    }
+    .scrollable-cell::-webkit-scrollbar {
+        width: 4px;
+    }
+    .scrollable-cell::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    
+    /* Remove text-nowrap from parent table if exists */
+    .table.text-nowrap {
+        white-space: normal;
+    }
+</style>
+</head>
+<body>
+  <!-- Content wrapper -->
+  <div class="content-wrapper">
+    <!-- Content -->
+    <div class="container-xxl flex-grow-1 container-p-y">
+      <!-- Basic Bootstrap Table -->
+      <div class="card">
+        <div class="row card-header flex-column flex-md-row pb-4">
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-start col-md-auto me-auto mt-0">
+            <h5 class="card-title mb-0 text-md-start text-center">Sales Team Members</h5>
+          </div>
+          <div class="d-md-flex justify-content-between align-items-center dt-layout-end col-md-auto ms-auto mt-0">
+            <div class="dt-buttons btn-group flex-wrap mb-0">
+              <div class="btn-group">
+                <input type="search" class="form-control ms-4" id="searchBox" placeholder="Search" aria-controls="DataTables_Table_1">
+                <button class="btn buttons-collection btn-label-primary dropdown-toggle me-4" tabindex="0" aria-controls="DataTables_Table_0" type="button" aria-haspopup="dialog" aria-expanded="false">
+                  <span>
+                    <span class="d-flex align-items-center gap-2">
+                      <i class="icon-base bx bx-export me-sm-1"></i>
+                      <span class="d-none d-sm-inline-block">Export</span>
+                    </span>
+                  </span>
+                </button>
+              </div>
+              <button class="btn create-new btn-primary" tabindex="0" onclick="window.location.href = '/sales/assignteam'" aria-controls="DataTables_Table_0" type="button">
+                <span>
+                  <span class="d-flex align-items-center gap-2">
+                    <i class="icon-base bx bx-plus icon-sm"></i>
+                    <span class="d-none d-sm-inline-block">Add Sales Team Member</span>
+                  </span>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-responsive text-nowrap">
+          <table class="table" id="tblid">
+            <thead>
+              <tr>
+                <th>Emp Id</th>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Category</th>
+                <th>States</th>
+                <th>Cities</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="teamTbody" class="table-border-bottom-0">
+              <!-- Data will be appended here -->
+            </tbody>
+          </table>
+          <div id="paginationControls"></div>
+        </div>
+      </div>
+      <!--/ Basic Bootstrap Table -->
+    </div>
+    <!-- / Content -->
+    <%- include('../footer') -%>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      let citiesMapping = {};
+
+      // First, load the cities to build a mapping from id to city name.
+      axios.get("/cities")
+        .then(response => {
+          const cities = response.data;
+          // Build a mapping: { 'cityId': 'City Name', ... }
+          cities.forEach(city => {
+            citiesMapping[city.id] = city.cityName;
+          });
+        })
+        .catch(err => {
+          console.error("Error fetching cities:", err);
+        })
+        .then(() => {
+          // After loading cities, load sales team members.
+          axios.get("/sales/team-members")
+            .then(response => {
+              const members = response.data.data || [];
+              const tbody = document.getElementById("teamTbody");
+              tbody.innerHTML = "";
+
+              members.forEach(member => {
+                // Convert the stored city codes to their names.
+                let cityNames = "N/A";
+                if (member.cities && Array.isArray(member.cities) && member.cities.length) {
+                  cityNames = member.cities
+                    .map(code => citiesMapping[code] || code)
+                    .join(", ");
+                }
+                
+                const row = `
+                  <tr data-member-id="${member.id}">
+                    <td>${member.employee_id}</td>
+                    <td>${member.emp_name}</td>
+                    <td>${member.emp_username}</td>
+                    <td>${member.category}</td>
+                    <td><div class="scrollable-cell">${member.states ? member.states.join(", ") : "N/A"}</div></td>
+                    <td><div class="scrollable-cell">${cityNames}</div></td>
+                    <td>${member.status}</td>
+                    <td>
+                      <button id="action" class="btn btn-icon item-edit">
+                        <i class="icon-base bx bx-edit icon-sm"></i>
+                      </button>
+                    </td>
+                  </tr>
+                `;
+                tbody.innerHTML += row;
+              });
+
+              // Initialize search and pagination (if function available)
+              if (typeof pagi_search === "function") {
+                pagi_search('#searchBox', '#tblid', '#paginationControls');
+              }
+            })
+            .catch(error => {
+              console.error("Error fetching sales team data:", error);
+            });
+        });
+
+      // Event delegation for the edit action
+      $('#tblid').on('click', '#action', function() {
+        const memberId = $(this).closest('tr').data('member-id');
+        window.location.href = `/sales/assignteam?id=${memberId}`;
+      });
+    });
+  </script>
+</body>
+</html>

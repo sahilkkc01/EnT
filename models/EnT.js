@@ -141,9 +141,51 @@ const Company = sequelize.define(
     tableName: "companies",
   }
 );
+const Documents = sequelize.define('Documents', {
+  filename: {
+      type: DataTypes.STRING,
+      allowNull: false
+  },
+  status: {
+      type: DataTypes.STRING,
+      defaultValue: "Pending"
+  },
+  notes: {
+    type: DataTypes.STRING,
+  
+}
+}, {
+  timestamps: true,
+  tableName:'documents'
+});
+
+const UserPermissions = sequelize.define(
+  "UserPermission",
+  {
+    app_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    emp_id: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    permissions: {
+      type: DataTypes.JSON,
+      allowNull: false,
+    },
+  },
+  {
+    timestamps: true,
+    alter: true,
+    tableName: "userpermissions",
+  }
+);
+// UserPermissions.sync()
+// Documents.sync({force:true})
 // Company.sync()
 // VendorType.sync()
 // TransportType.sync()
 // Department.sync()
 // sequelize.sync({ force: true });
-module.exports = { Department, UserTokens, TransportType, VendorType, Company };
+module.exports = { Department, UserTokens, TransportType, VendorType, Company,Documents,UserPermissions };

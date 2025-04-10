@@ -10,6 +10,7 @@ const {
   LeadInteraction,
   LeadTeamAssignment,
   LeadQuotation,
+  MarketingTeam,
 } = require("../models/MarketingSchema"); // Adjust the path based on your project structure
 const { Op } = require("sequelize");
 const path = require("path");
@@ -1689,6 +1690,183 @@ exports.updateLeadFollowUpStatus = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+exports.assignMarketingTeamMember = async (req, res) => {
+  try {
+    const appId = req.user?.app_id;
+    if (!appId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Please log in",
+      });
+    }
+
+    const { employee_id, emp_name, emp_username, category, states, cities } = req.body;
+
+    // Validate required fields
+    if (!employee_id || !emp_name || !emp_username || !category) {
+      return res.status(400).json({
+        success: false,
+        message: "Employee ID, name, username, and category are required",
+      });
+    }
+
+    // Check if employee already exists
+    const existingEmployee = await MarketingTeam.findOne({
+      where: { employee_id, app_id: appId },
+    });
+
+    if (existingEmployee) {
+      return res.status(409).json({
+        success: false,
+        message: `Employee with ID ${employee_id} is already assigned to the marketing team.`,
+      });
+    }
+
+    // Save assignment if employee doesn't exist
+    const assignment = await MarketingTeam.create({
+      app_id: appId,
+      employee_id,
+      emp_name,
+      emp_username,
+      category,
+      states,
+      cities,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Marketing team member assigned successfully",
+      data: assignment,
+    });
+  } catch (error) {
+    console.error("Error assigning marketing team member:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+
+exports.getMarketingTeamMembers = async (req, res) => {
+  try {
+    const appId = req.user?.app_id;
+    if (!appId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Please log in",
+      });
+    }
+    // Get all team members for the app in descending order of creation.
+    const teamMembers = await MarketingTeam.findAll({
+      where: { app_id: appId },
+      order: [["createdAt", "DESC"]],
+    });
+    return res.status(200).json({
+      success: true,
+      data: teamMembers,
+    });
+  } catch (error) {
+    console.error("Error fetching marketing team members:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+exports.getSpecialMarketingDetails = async (req, res) => {
+  try {
+    const appId = req.user?.app_id;
+    if (!appId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Please log in",
+      });
+    }
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Bad Request: Employee ID is required",
+      });
+    }
+    // Fetch special details for the specified employee within the same app.
+    const specialDetails = await MarketingTeam.findOne({
+      where: { app_id: appId, id },
+    });
+    if (!specialDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee assignment details not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      data: specialDetails,
+    });
+  } catch (error) {
+    console.error("Error fetching special marketing details:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateMarketingTeamMember = async (req, res) => {
+  try {
+    const appId = req.user?.app_id;
+    if (!appId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Please log in",
+      });
+    }
+
+    const { id } = req.params;
+    const { emp_name, emp_username, category, states, cities } = req.body;
+
+    // Validate required fields
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: " ID is required",
+      });
+    }
+
+    const employee = await MarketingTeam.findOne({
+      where: { id, app_id: appId },
+    });
+
+    if (!employee) {
+      return res.status(404).json({
+        success: false,
+        message: "Employee not found in the marketing team",
+      });
+    }
+
+    // Update employee details
+    await employee.update({ emp_name, emp_username, category, states, cities });
+
+    return res.status(200).json({
+      success: true,
+      message: "Marketing team member updated successfully",
+      data: employee,
+    });
+  } catch (error) {
+    console.error("Error updating marketing team member:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
       error: error.message,
     });
   }

@@ -573,6 +573,50 @@ const LeadQuotation = sequelize.define(
     tableName: "lead_quotation",
   }
 );
+
+const MarketingTeam = sequelize.define(
+  "MarketingTeam",
+  {
+    app_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    employee_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    emp_name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    emp_username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    category: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    states: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    cities: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    status: {
+      type: DataTypes.ENUM("Active", "Inactive"),
+      defaultValue: "Active",
+      allowNull: false,
+    },
+  },
+  {
+    timestamps: true,
+    tableName: "marketingteam",
+  }
+);
+// MarketingTeam.sync({force:true})
 // LeadQuotation.sync()
 module.exports = {
   Client,
@@ -586,4 +630,5 @@ module.exports = {
   LeadInteraction,
   LeadTeamAssignment,
   LeadQuotation,
+  MarketingTeam
 };

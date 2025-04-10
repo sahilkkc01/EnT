@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Access Management</title>
+  <%- include('../header') -%>
+  <style>
+    .permission-card {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .module-header {
+      cursor: pointer;
+      padding: 0.5rem;
+      background: #e9ecef;
+      border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+    .sub-items {
+      padding-left: 1.5rem;
+      margin-top: 0.5rem;
+    }
+    .scroll-container {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 1rem;
+    }
+    .form-check { margin-bottom: 0.25rem; }
+  </style>
+</head>
+
+<body>
+  <div class="container my-4">
+    <div class="card p-4">
+      <h3 class="text-center mb-4">Employee Access Permissions</h3>
+      
+      <form id="permissionForm">
+        <!-- Employee Selection -->
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <label for="employeeSelect" class="form-label">Select Employee</label>
+            <select class="form-select" id="employeeSelect" required>
+              <option value="">-- Loading Employees --</option>
+            </select>
+          </div>
+          <div class="col-md-4 align-self-end">
+            <button type="button" class="btn btn-secondary" id="selectAllBtn">Toggle All Modules</button>
+          </div>
+        </div>
+
+        <!-- Employee Details -->
+        <div id="employeeDetails" class="mb-4 d-none">
+          <div class="row">
+            <div class="col-md-4">
+              <p><strong>Name:</strong> <span id="empName">-</span></p>
+            </div>
+            <div class="col-md-4">
+              <p><strong>Position:</strong> <span id="empPosition">-</span></p>
+            </div>
+            <div class="col-md-4">
+              <p><strong>Department:</strong> <span id="empDept">-</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Permissions Container -->
+        <div class="scroll-container">
+          <div id="permissionsContainer" class="row g-3">
+            <!-- Modules loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary">Save Permissions</button>
+        <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <%- include('../footer') -%>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+  <script>
+  $(document).ready(function() {
+    let employees = [];
+    const permissionsStructure = [
+      {
+        id: 'management',
+        name: 'Management',
+        subItems: [
+          { id: 'uploadfiles', name: 'Upload Files' },
+          { id: 'userpermissions', name: 'Permissions' },
+          { id: 'event-planning', name: 'Event Planning' },
+          { id: 'vendors', name: 'Vendor Management' },
+          { id: 'hotels', name: 'Hotel Management' }
+        ]
+      },
+      {
+        id: 'hr',
+        name: 'HR',
+        subItems: [
+          { id: 'employees', name: 'Employee List' },
+          { id: 'recruitment', name: 'Recruitment' },
+          { id: 'attendance', name: 'Attendance' }
+        ]
+      },
+      {
+        id: 'marketing',
+        name: 'Marketing',
+        subItems: [
+          { id: 'team', name: 'Team' },
+          { id: 'campaigns', name: 'Campaigns' },
+          { id: 'social-media', name: 'Social Media' },
+          { id: 'leads', name: 'Leads' },
+          { id: 'clients', name: 'Clients' }
+        ]
+      },
+      {
+        id: 'sales',
+        name: 'Sales',
+        subItems: [
+          { id: 'team', name: 'Team' },
+          { id: 'inquiries', name: 'Inquiries' },
+          { id: 'revenue', name: 'Revenue' }
+        ]
+      },
+      {
+        id: 'operations',
+        name: 'Operations',
+        subItems: [
+          { id: 'logistics', name: 'Logistics' },
+          { id: 'venue-management', name: 'Venue Management' },
+          { id: 'schedule', name: 'Schedule' }
+        ]
+      },
+      {
+        id: 'accounts',
+        name: 'Accounts',
+        subItems: [
+          { id: 'invoices', name: 'Invoices' },
+          { id: 'expenses', name: 'Expenses' },
+          { id: 'reports', name: 'Reports' }
+        ]
+      },
+      {
+        id: 'rnd',
+        name: 'R&D',
+        subItems: [
+          { id: 'market-analysis', name: 'Market Analysis' },
+          { id: 'innovation', name: 'Innovation' },
+          { id: 'customer-feedback', name: 'Customer Feedback' }
+        ]
+      },
+      {
+        id: 'master',
+        name: 'Master',
+        subItems: [
+          { id: 'company-reg', name: 'Companies' }
+        ]
+      },
+      {
+        id: 'admin',
+        name: 'Admin',
+        subItems: [
+          { id: 'dashboard', name: 'Dashboard' }
+        ]
+      }
+    ];
+
+    let currentPermissions = {};
+    const urlParams = new URLSearchParams(window.location.search);
+    const empId = urlParams.get('id');
+
+    // Load employees
+    axios.get('/HR/get-employees')
+      .then(response => {
+        employees = response.data.employees || response.data;
+        const select = $('#employeeSelect').empty().append('<option value="">-- Select Employee --</option>');
+        employees.forEach(emp => {
+          select.append(new Option(`${emp.name} (${emp.username})`, emp.id));
+        });
+        
+        if(empId) {
+          $('#employeeSelect').val(empId).trigger('change');
+          $('#employeeSelect').prop('disabled', true);
+        }
+      })
+      .catch(console.error);
+
+    // Render permissions structure
+    function renderPermissions() {
+      const container = $('#permissionsContainer').empty();
+      
+      permissionsStructure.forEach(module => {
+        const moduleHtml = `
+          <div class="col-md-6">
+            <div class="permission-card">
+              <div class="module-header d-flex justify-content-between align-items-center">
+                <div class="form-check">
+                  <input class="form-check-input module-checkbox" type="checkbox" 
+                    id="module_${module.id}" data-module="${module.id}">
+                  <label class="form-check-label fw-bold" for="module_${module.id}">
+                    ${module.name}
+                  </label>
+                </div>
+                <i class="bx bx-chevron-down toggle-icon"></i>
+              </div>
+              <div class="sub-items">
+                ${module.subItems.map(sub => `
+                  <div class="form-check">
+                    <input class="form-check-input subitem-checkbox" type="checkbox" 
+                      id="sub_${module.id}_${sub.id}" 
+                      data-module="${module.id}" 
+                      value="${sub.id}">
+                    <label class="form-check-label" for="sub_${module.id}_${sub.id}">
+                      ${sub.name}
+                    </label>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+        container.append(moduleHtml);
+      });
+
+      // Add toggle functionality
+      $('.module-header').click(function() {
+        $(this).closest('.permission-card').find('.sub-items').slideToggle();
+        $(this).find('.toggle-icon').toggleClass('bx-chevron-up bx-chevron-down');
+      });
+    }
+
+    // Initialize permissions UI
+    renderPermissions();
+
+    // Employee selection handler
+    $('#employeeSelect').change(function() {
+      const empId = $(this).val();
+      const employee = employees.find(e => e.id == empId);
+      
+      if(employee) {
+        $('#employeeDetails').removeClass('d-none');
+        $('#empName').text(employee.name);
+        $('#empPosition').text(employee.desg);
+        $('#empDept').text(employee.dept);
+        loadExistingPermissions(empId);
+      } else {
+        $('#employeeDetails').addClass('d-none');
+      }
+    });
+
+    // Load existing permissions
+    function loadExistingPermissions(empId) {
+      axios.get(`/admin/employee-permissions/${empId}`)
+        .then(response => {
+          currentPermissions = response.data.permissions || {};
+          updatePermissionUI();
+        })
+        .catch(console.error);
+    }
+
+    // Update UI with permissions
+    function updatePermissionUI() {
+      permissionsStructure.forEach(module => {
+        const moduleEl = $(`#module_${module.id}`);
+        const subItems = currentPermissions[module.id] || [];
+        
+        // Update module checkbox
+        moduleEl.prop('checked', subItems.length === module.subItems.length);
+        
+        // Update sub-items
+        module.subItems.forEach(sub => {
+          const subEl = $(`#sub_${module.id}_${sub.id}`);
+          subEl.prop('checked', subItems.includes(sub.id));
+        });
+      });
+    }
+
+    // Form submission
+    $('#permissionForm').submit(function(e) {
+      e.preventDefault();
+      const empId = $('#employeeSelect').val();
+      const permissions = {};
+
+      permissionsStructure.forEach(module => {
+        const subItems = $(`.subitem-checkbox[data-module="${module.id}"]:checked`)
+          .map((_, el) => $(el).val()).get();
+        
+        if(subItems.length > 0) {
+          permissions[module.id] = subItems;
+        }
+      });
+
+      axios.post('/admin/update-permissions', {
+        employeeId: empId,
+        permissions: permissions
+      })
+      .then(() => {
+        alert('Permissions updated successfully!');
+        // window.location.href = '/admin/employees';
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Error updating permissions');
+      });
+    });
+
+    // Toggle all modules
+    $('#selectAllBtn').click(function() {
+      $('.module-checkbox').prop('checked', (_, val) => !val).trigger('change');
+    });
+
+    // Module checkbox handler
+    $(document).on('change', '.module-checkbox', function() {
+      const moduleId = $(this).data('module');
+      const isChecked = $(this).prop('checked');
+      $(`.subitem-checkbox[data-module="${moduleId}"]`).prop('checked', isChecked);
+    });
+
+    // Subitem checkbox handler
+    $(document).on('change', '.subitem-checkbox', function() {
+      const moduleId = $(this).data('module');
+      const allChecked = $(`.subitem-checkbox[data-module="${moduleId}"]:checked`).length === 
+        $(`.subitem-checkbox[data-module="${moduleId}"]`).length;
+      $(`#module_${moduleId}`).prop('checked', allChecked);
+    });
+  });
+  </script>
+</body>
+</html>

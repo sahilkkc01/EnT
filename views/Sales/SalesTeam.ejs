@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" class="light-style layout-menu-fixed layout-compact" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Employee Assignment</title>
+  
+  <%- include('../header') -%>
+
+
+  
+  <style>
+    .card {
+      border-radius: 10px;
+      box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.1);
+    }
+    .state-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .state-card {
+      width: 300px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .cities-container {
+      padding-left: 15px;
+      border-left: 2px solid #007bff;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container my-4">
+    <div class="card p-4">
+      <h3 class="text-center mb-3">Sales Employee Assignment</h3>
+      
+      <form id="assignmentForm">
+        <div class="row">
+          <!-- Employee Selection -->
+          <div class="col-md-6">
+            <label for="employeeSelect" class="form-label">Select Employee</label>
+            <select class="form-select" id="employeeSelect" name="employee">
+              <option value="">-- Loading Employees --</option>
+            </select>
+          </div>
+          
+          <!-- Category Selection -->
+          <div class="col-md-6">
+            <label for="categorySelect" class="form-label">Select Category</label>
+            <select class="form-select" id="categorySelect" name="category">
+              <option value="Event">Event</option>
+              <option value="Tour">Tour</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- States & Cities -->
+        <div class="mt-4">
+          <h5>Select State(s) & Cities</h5>
+          <button type="button" id="selectAllStates" class="btn btn-sm btn-secondary mb-2">Select All States</button>
+          
+          <div id="statesContainer" class="state-container">
+            <p>Loading states...</p>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center mt-4">
+          <button type="submit" class="btn btn-primary">Submit Assignment</button>
+          <button type="cancel" onclick="window.location.href='/sales/team'" class="btn btn-secondry">Back</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <%- include('../footer') -%>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  
+<script>
+ $(document).ready(function(){
+  let employees = [], states = [], cities = [];
+  const urlParams = new URLSearchParams(window.location.search);
+  const assignmentId = urlParams.get('id');
+
+  // Load employees
+  axios.get('/HR/get-employees')
+    .then(response => {
+      employees = response.data.employees || response.data;
+      const empSelect = $('#employeeSelect').empty().append(`<option value="">-- Select Employee --</option>`);
+      employees.forEach(emp => empSelect.append(`<option value="${emp.id}">${emp.name} (${emp.username})</option>`));
+    })
+    .catch(err => console.error("Error loading employees", err));
+
+  // Load states
+  axios.get('/getStates')
+    .then(response => {
+      states = Array.isArray(response.data) ? response.data : JSON.parse(response.data);
+      displayStates();
+    })
+    .catch(err => console.error("Error loading states", err));
+
+  // Load cities
+  axios.get('/cities')
+    .then(response => cities = response.data)
+    .catch(err => console.error("Error loading cities", err));
+
+  // Fetch existing assignment data if ID is present
+  if (assignmentId) {
+    axios.get(`/sales/get-assignment/${assignmentId}`)
+      .then(response => {
+        const data = response.data.data;
+        console.log(data)
+        $('#employeeSelect').val(data.employee_id);
+        $('#categorySelect').val(data.category);
+        
+        setTimeout(() => {
+          data.states.forEach(stateCode => {
+            $(`#state_${stateCode}`).prop('checked', true).trigger('change');
+          });
+
+          data.cities.forEach(cityId => {
+            $(`#city_${cityId}`).prop('checked', true);
+          });
+        }, 500);
+      })
+      .catch(err => console.error("Error fetching assignment data", err));
+  }
+
+  // Display states
+  function displayStates() {
+    const container = $('#statesContainer').empty();
+    states.forEach(state => {
+      if (!state.stateCode || !state.stateName) return;
+
+      container.append(`
+        <div class="state-card">
+          <div class="form-check">
+            <input class="form-check-input state-checkbox" type="checkbox" value="${state.stateCode}" id="state_${state.stateCode}">
+            <label class="form-check-label fw-bold" for="state_${state.stateCode}">${state.stateName}</label>
+          </div>
+          <div id="cities_${state.stateCode}" class="cities-container mt-2"></div>
+        </div>
+      `);
+    });
+  }
+
+  // Show cities when a state is selected
+  $('#statesContainer').on('change', '.state-checkbox', function(){
+    const stateCode = $(this).val();
+    const citiesContainer = $(`#cities_${stateCode}`);
+
+    if ($(this).is(':checked')) {
+      const filteredCities = cities.filter(city => city.stateCode === stateCode);
+      citiesContainer.empty();
+      
+      if (filteredCities.length) {
+        citiesContainer.append('<button type="button" class="btn btn-sm btn-outline-primary selectAllCities" data-state="' + stateCode + '">Select All Cities</button><br>');
+        filteredCities.forEach(city => {
+          citiesContainer.append(`
+            <div class="form-check form-check-inline">
+              <input class="form-check-input city-checkbox" type="checkbox" value="${city.id}" id="city_${city.id}" name="cities">
+              <label class="form-check-label" for="city_${city.id}">${city.cityName}</label>
+            </div>
+          `);
+        });
+      } else {
+        citiesContainer.html('<p>No cities available.</p>');
+      }
+    } else {
+      citiesContainer.empty();
+    }
+  });
+
+  // "Select All States" button (Toggle selection)
+  $('#selectAllStates').click(function(){
+    const allChecked = $('.state-checkbox:checked').length === $('.state-checkbox').length;
+    $('.state-checkbox').prop('checked', !allChecked).trigger('change');
+  });
+
+  // "Select All Cities" within a state (Toggle selection)
+  $(document).on('click', '.selectAllCities', function(){
+    const stateCode = $(this).data('state');
+    const cityCheckboxes = $(`#cities_${stateCode} .city-checkbox`);
+    const allChecked = cityCheckboxes.length === cityCheckboxes.filter(':checked').length;
+    
+    cityCheckboxes.prop('checked', !allChecked);
+  });
+
+  // Form submission
+  $('#assignmentForm').submit(function(e){
+    e.preventDefault();
+    const employee_id = $('#employeeSelect').val();
+    const category = $('#categorySelect').val();
+    const states = $('.state-checkbox:checked').map((_, el) => $(el).val()).get();
+    const cities = $('.city-checkbox:checked').map((_, el) => $(el).val()).get();
+
+    const selectedEmployee = employees.find(emp => emp.id == employee_id);
+    const emp_name = selectedEmployee ? selectedEmployee.name : '';
+    const emp_username = selectedEmployee ? selectedEmployee.username : '';
+
+    const payload = {
+      employee_id,
+      emp_name,
+      emp_username,
+      category,
+      states,
+      cities
+    };
+
+    console.log("Payload:", payload);
+
+    const request = assignmentId 
+      ? axios.put(`/sales/update-assignment/${assignmentId}`, payload) 
+      : axios.post('/sales/assign-employee', payload);
+
+    request.then(response => {
+      alert(response.data.message || 'Assignment successful!');
+      window.location.href='/sales/team';
+    })
+    .catch(err => {
+      if (err.response) {
+        alert(err.response.data.message || "An error occurred while assigning the employee.");
+      } else {
+        alert("Network error or server not responding.");
+      }
+      console.error("Error submitting assignment:", err);
+    });
+  });
+});
+
+</script>
+</body>
+</html>

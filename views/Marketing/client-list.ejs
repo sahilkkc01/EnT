@@ -172,7 +172,7 @@
                             </select>
                         </td>
 
-                        <td>${client?.clientCategory?.charAt(0)?.toUpperCase() + client?.clientCategory?.slice(1)}</td>
+                     <td>${client?.clientCategory ? client.clientCategory.charAt(0).toUpperCase() + client.clientCategory.slice(1) : "N/A"}</td>
 
                         <td>
     <a class="btn p-0" href="/marketing/add-client?id=${client.id}">
@@ -192,6 +192,7 @@
                     console.error("Error fetching clients data:", error);
                 }
             }
+           
             function trackClient(id) {
                 window.location.href = `/marketing/track-client?id=${id}`
             }

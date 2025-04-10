@@ -97,10 +97,16 @@
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
-                    <a href="/management/overview" class="menu-link">
-                        <div class="text-truncate" data-i18n="Overview">Overview</div>
+                    <a href="/uploadfiles" class="menu-link">
+                        <div class="text-truncate" data-i18n="Overview">Upload Files</div>
                     </a>
                 </li>
+                <li class="menu-item">
+                    <a href="/userpermissions" class="menu-link">
+                        <div class="text-truncate" data-i18n="Overview">Permissions</div>
+                    </a>
+                </li>
+                
                 <li class="menu-item">
                     <a href="/management/event-planning" class="menu-link">
                         <div class="text-truncate" data-i18n="Event Planning">Event Planning</div>
@@ -177,20 +183,22 @@ document.addEventListener('DOMContentLoaded', function() {
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
+                    <a href="/marketing/team" class="menu-link">
+                        <div class="text-truncate" data-i18n="team">Team</div>
+                    </a>
+                </li>
+                <li class="menu-item">
                     <a href="/marketing/campaigns" class="menu-link">
                         <div class="text-truncate" data-i18n="Campaigns">Campaigns</div>
                     </a>
                 </li>
+                
                 <li class="menu-item">
                     <a href="/marketing/social-media" class="menu-link">
                         <div class="text-truncate" data-i18n="Social Media">Social Media</div>
                     </a>
                 </li>
-                <li class="menu-item">
-                    <a href="/marketing/clients" class="menu-link">
-                        <div class="text-truncate" data-i18n="Leads">Clients</div>
-                    </a>
-                </li>
+                
                 <li class="menu-item">
                     <a href="/marketing/leads" class="menu-link">
                         <div class="text-truncate" data-i18n="Leads">Leads</div>
@@ -198,7 +206,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 </li>
             </ul>
         </li>
-    
+        
+        <li class="menu-item">
+          <a href="javascript:void(0);" class="menu-link menu-toggle">
+            <i class="menu-icon tf-icons bx bx-user"></i>
+
+              <div class="text-truncate" data-i18n="Clients">Clients</div>
+          </a>
+          <ul class="menu-sub">
+              
+              <li class="menu-item">
+                  <a href="/marketing/clients" class="menu-link">
+                      <div class="text-truncate" data-i18n="Leads">Clients</div>
+                  </a>
+              </li>
+             
+          </ul>
+      </li>
         <!-- Sales -->
         <li class="menu-item">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -207,10 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
             </a>
             <ul class="menu-sub">
                 <li class="menu-item">
-                    <a href="/sales/bookings" class="menu-link">
-                        <div class="text-truncate" data-i18n="Bookings">Bookings</div>
+                  <li class="menu-item">
+                    <a href="/sales/team" class="menu-link">
+                        <div class="text-truncate" data-i18n="team">Team</div>
                     </a>
-                </li>
+                
                 <li class="menu-item">
                     <a href="/sales/inquiries" class="menu-link">
                         <div class="text-truncate" data-i18n="Inquiries">Inquiries</div>
@@ -428,4 +453,175 @@ document.addEventListener('DOMContentLoaded', function() {
           </ul>
         </div>
       </nav>
-      
+      <script>
+        // Add this configuration before the menu generation
+        const menuConfig = {
+          management: {
+            name: 'Management',
+            icon: 'bx-briefcase',
+            subItems: {
+              uploadfiles: { href: '/uploadfiles', name: 'Upload Files' },
+              userpermissions: { href: '/userpermissions', name: 'Permissions' },
+              'event-planning': { href: '/management/event-planning', name: 'Event Planning' },
+              vendors: { href: '/management/vendors', name: 'Vendor Management' },
+              hotels: { href: '/management/hotels', name: 'Hotel Management' },
+              permissions: { href: '/userPermissions', name: 'Permissions' }
+            }
+          },
+          hr: {
+            name: 'HR',
+            icon: 'bx-group',
+            subItems: {
+              employees: { href: '/HR/employees', name: 'Employee List' },
+              recruitment: { href: '/hr/recruitment', name: 'Recruitment' },
+              attendance: { href: '/hr/attendance', name: 'Attendance' }
+            }
+          },
+          marketing: {
+            name: 'Marketing',
+            icon: 'bx-trending-up',
+            subItems: {
+              team: { href: '/marketing/team', name: 'Team' },
+              campaigns: { href: '/marketing/campaigns', name: 'Campaigns' },
+              'social-media': { href: '/marketing/social-media', name: 'Social Media' },
+              leads: { href: '/marketing/leads', name: 'Leads' },
+              clients: { href: '/marketing/clients', name: 'Clients' }
+            }
+          },
+          sales: {
+            name: 'Sales',
+            icon: 'bx-cart',
+            subItems: {
+              team: { href: '/sales/team', name: 'Team' },
+              inquiries: { href: '/sales/inquiries', name: 'Inquiries' },
+              revenue: { href: '/sales/revenue', name: 'Revenue' }
+            }
+          },
+          operations: {
+            name: 'Operations',
+            icon: 'bx-cog',
+            subItems: {
+              logistics: { href: '/operations/logistics', name: 'Logistics' },
+              'venue-management': { href: '/operations/venue-management', name: 'Venue Management' },
+              schedule: { href: '/operations/schedule', name: 'Schedule' }
+            }
+          },
+          accounts: {
+            name: 'Accounts',
+            icon: 'bx-wallet',
+            subItems: {
+              invoices: { href: '/accounts/invoices', name: 'Invoices' },
+              expenses: { href: '/accounts/expenses', name: 'Expenses' },
+              reports: { href: '/accounts/reports', name: 'Reports' }
+            }
+          },
+          rnd: {
+            name: 'R&D',
+            icon: 'bx-brain',
+            subItems: {
+              'market-analysis': { href: '/rnd/market-analysis', name: 'Market Analysis' },
+              innovation: { href: '/rnd/innovation', name: 'Innovation' },
+              'customer-feedback': { href: '/rnd/customer-feedback', name: 'Customer Feedback' }
+            }
+          },
+          master: {
+            name: 'Master',
+            icon: 'bx-list-ul',
+            subItems: {
+              'company-reg': { href: '/company-reg', name: 'Companies' }
+            }
+          },
+          admin: {
+            name: 'Admin',
+            icon: 'bxs-dashboard',
+            subItems: {
+              dashboard: { href: '/admin/dashboard', name: 'Dashboard' }
+            }
+          }
+        };
+        
+        document.addEventListener('DOMContentLoaded', function() {
+          // Get permissions from localStorage
+          const permissions = JSON.parse(localStorage.getItem('userPermissions')) || {};
+          
+          // Generate dynamic menu
+          const menuInner = document.querySelector('.menu-inner');
+          let menuHtml = '';
+        
+          // Generate modules
+          Object.keys(permissions).forEach(moduleKey => {
+            const module = menuConfig[moduleKey];
+            if (!module || !permissions[moduleKey].length) return;
+        
+            menuHtml += `
+              <li class="menu-item">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                  <i class="menu-icon tf-icons bx ${module.icon}"></i>
+                  <div class="text-truncate">${module.name}</div>
+                </a>
+                <ul class="menu-sub">`;
+        
+            permissions[moduleKey].forEach(subItemKey => {
+              const subItem = module.subItems[subItemKey];
+              if (subItem) {
+                menuHtml += `
+                  <li class="menu-item">
+                    <a href="${subItem.href}" class="menu-link">
+                      <div class="text-truncate">${subItem.name}</div>
+                    </a>
+                  </li>`;
+              }
+            });
+        
+            menuHtml += `</ul></li>`;
+          });
+        
+          // Add Admin dashboard if permitted
+          if (permissions.admin?.includes('dashboard')) {
+            menuHtml += `
+              <li class="menu-header small text-uppercase">
+                <span class="menu-header-text">Admin</span>
+              </li>
+              <li class="menu-item">
+                <a href="/admin/dashboard" class="menu-link">
+                  <i class="menu-icon tf-icons bx bxs-dashboard"></i>
+                  <div class="text-truncate">Dashboard</div>
+                </a>
+              </li>`;
+          }
+        
+          menuInner.innerHTML = menuHtml;
+        
+          // Re-run menu activation
+          document.querySelectorAll('.menu-item').forEach(item => {
+            item.classList.remove('active', 'open');
+          });
+        
+          const currentPath = window.location.pathname;
+          document.querySelectorAll('.menu-link').forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+              link.closest('.menu-item').classList.add('active');
+              let parent = link.closest('.menu-sub')?.closest('.menu-item');
+              while(parent) {
+                parent.classList.add('active', 'open');
+                parent = parent.closest('.menu-sub')?.closest('.menu-item');
+              }
+            }
+          });
+        });
+        </script>
+        <script>
+          document.addEventListener('DOMContentLoaded', function() {
+            // Get user info from localStorage
+            const user = JSON.parse(localStorage.getItem('user')) || {};
+            
+            // Update user info in navbar dropdown
+            const userInfoElements = document.querySelectorAll('.dropdown-item .mb-0, .dropdown-item .text-muted');
+            if(userInfoElements.length >= 2) {
+              userInfoElements[0].textContent = user.name || 'Guest';  // User name
+              userInfoElements[1].textContent = user.username || 'User';   // Designation
+            }
+            
+            
+          });
+          </script>

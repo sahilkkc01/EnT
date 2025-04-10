@@ -1,88 +1,87 @@
-const { Department, UserTokens, TransportType, VendorType, Company } = require("../models/EnT");
+const { Department, UserTokens, TransportType, VendorType, Company, Documents, UserPermissions } = require("../models/EnT");
 const { Employee } = require("../models/HrSchema");
 const { Op } = require("sequelize");
+const fs = require('fs');
 // const md5 = require("md5");
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET
 const bcrypt = require("bcryptjs");
 
+const path = require("path");
+
 
 exports.login = async (req, res) => {
- 
   const { username, password } = req.body;
 
-  console.log(req.body);
-
   try {
-    // Step 1: Verify user credentials
+    // 1. Verify user credentials
     const user = await Employee.findOne({
-      where: {
-        username: username,
-        status: true,
-      },
+      where: { username, status: true }
     });
 
-    if (!user) {
-      return res.status(404).json({ msg: "User not found" });
-    }
+    if (!user) return res.status(404).json({ msg: "User not found" });
 
-    // Step 2: Compare hashed password using bcrypt
+    // 2. Validate password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ msg: "Invalid username or password" });
     }
 
-    // Step 3: Check if user is already logged in elsewhere
-    const existingToken = await UserTokens.findOne({
-      where: { username: user.username },
-    });
-
+    // 3. Check existing sessions
+    const existingToken = await UserTokens.findOne({ where: { username } });
     if (existingToken) {
       return res.status(409).json({
-        msg: "User is already logged in elsewhere.",
-        username: user.username,
+        msg: "User is already logged in elsewhere",
+        username
       });
     }
 
-    // Step 4: Generate JWT token
+    // 4. Get user permissions
+    const userPermissions = await UserPermissions.findOne({
+      where: {
+        app_id: user.app_id,
+        emp_id: user.id.toString() // Convert to string if needed
+      }
+    });
+
+    // 5. Generate JWT
     const token = jwt.sign(
       {
         id: user.id,
         app_id: user.app_id,
         username: user.username,
-        name: user.name,
+        name: user.name
       },
-      JWT_SECRET // Secret key stored in environment variable
+      JWT_SECRET
     );
 
-    // Step 5: Store token in HttpOnly cookie
+    // 6. Set cookie
     res.cookie("token", token, {
-      maxAge: 6 * 30 * 24 * 60 * 60 * 1000, // 6 months
-      httpOnly: true, // Prevents client-side access
+      maxAge: 6 * 30 * 24 * 60 * 60 * 1000,
+      httpOnly: true
     });
 
-    // Step 6: Save token in UserTokens table
-    await UserTokens.create({
-      username: user.username,
-      jwtToken: token,
-    });
+    // 7. Save token
+    await UserTokens.create({ username, jwtToken: token });
 
-    // Step 7: Send final login response
-    // console.log(user);
+    // 8. Send response with permissions
     res.status(200).json({
       msg: "Login successful",
       user: {
         id: user.id,
         username: user.username,
         app_id: user.app_id,
-        name: user.name,
+        name: user.name
       },
+      permissions: userPermissions?.permissions || {}
     });
+
   } catch (error) {
-    console.error("Error authenticating user:", error);
+    console.error("Login error:", error);
     res.status(500).json({ msg: "Error during login" });
   }
 };
+
 exports.logoutFromEverywhere = async (req, res) => {
   console.log(req.body);
   try {
@@ -277,7 +276,6 @@ exports.addCompany = async (req, res) => {
 };
 
 
-const path = require("path");
 
 exports.getDataFromField = async (req, res) => {
     const { elementId } = req.query;
@@ -413,5 +411,150 @@ exports.getCompanyById = async (req, res) => {
           message: "Internal Server Error", 
           error: error.message 
       });
+  }
+};
+
+exports.uploadFile = async (req, res) => {
+  console.log(req.body)
+  try {
+      if (!req.file) {
+          return res.status(400).json({ success: false, message: "No file uploaded" });
+      }
+
+      const newFile = await Documents.create({
+          filename: req.file.filename,
+          filepath: `/uploads/${req.file.filename}`,
+          status: 'Pending',
+          notes :req.body.notes
+      });
+
+      return res.status(201).json({ success: true, message: "File uploaded successfully", file: newFile });
+  } catch (error) {
+      console.error("Error uploading file:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.getFiles = async (req, res) => {
+  try {
+    const appId = req.user?.app_id;
+    if (!appId) {
+        return res.status(401).json({ success: false, message: "Unauthorized: Please log in" });
+    }
+      const files = await Documents.findAll({ order: [['createdAt', 'DESC']] });
+      return res.status(200).json({ success: true, files });
+  } catch (error) {
+      console.error("Error fetching files:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.downloadFile = async (req, res) => {
+  try {
+      const { id } = req.query;
+      const file = await Documents.findByPk(id);
+      if (!file) {
+          return res.status(404).json({ success: false, message: "File not found" });
+      }
+
+      const filePath = path.join(__dirname, '../public/Documents', file.filename);
+      if (!fs.existsSync(filePath)) {
+          return res.status(404).json({ success: false, message: "File not found on server" });
+      }
+
+      return res.download(filePath, file.filename);
+  } catch (error) {
+      console.error("Error downloading file:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.updateFileStatus = async (req, res) => {
+  try {
+      const { id } = req.query;
+      const file = await Documents.findByPk(id);
+      if (!file) {
+          return res.status(404).json({ success: false, message: "File not found" });
+      }
+
+      file.status = file.status === "Pending" ? "Uploaded" : "Pending";
+      await file.save();
+
+      return res.status(200).json({ success: true, message: "Status updated successfully", file });
+  } catch (error) {
+      console.error("Error updating file status:", error);
+      return res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+exports.getEmployeePermissions = async (req, res) => {
+  const { emp_id } = req.params;
+  const appId = req.user?.app_id;
+
+  if (!appId) {
+      return res.status(400).send({ msg: "Please login" });
+  }
+
+  try {
+      const permissions = await UserPermissions.findOne({
+          where: { emp_id, app_id: appId }
+      });
+
+      if (!permissions) {
+          return res.status(200).json({
+              message: "No permissions found",
+              permissions: {}
+          });
+      }
+
+      res.status(200).json({
+          message: "Permissions retrieved successfully",
+          permissions: permissions.permissions
+      });
+  } catch (error) {
+      console.error("Error fetching permissions:", error);
+      res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Update employee permissions
+exports.updateEmployeePermissions = async (req, res) => {
+  const { employeeId, permissions } = req.body;
+  const appId = req.user?.app_id;
+
+  if (!appId) {
+      return res.status(400).send({ msg: "Please login" });
+  }
+
+  if (!employeeId || !permissions) {
+      return res.status(400).json({ message: "Employee ID and permissions are required" });
+  }
+
+  try {
+      const existing = await UserPermissions.findOne({
+          where: { emp_id: employeeId, app_id: appId }
+      });
+
+      let result;
+      if (existing) {
+          result = await UserPermissions.update(
+              { permissions },
+              { where: { emp_id: employeeId, app_id: appId } }
+          );
+      } else {
+          result = await UserPermissions.create({
+              app_id: appId,
+              emp_id: employeeId,
+              permissions
+          });
+      }
+
+      res.status(200).json({
+          message: "Permissions updated successfully",
+          permissions: result
+      });
+  } catch (error) {
+      console.error("Error updating permissions:", error);
+      res.status(500).json({ message: "Internal server error" });
   }
 };
