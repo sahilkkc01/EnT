@@ -164,6 +164,7 @@ exports.saveOrUpdateClient = async (req, res) => {
 // Get all clients with pagination and filtering
 exports.getAllClients = async (req, res) => {
   try {
+    console.log(req.user)
     const appId = req.user?.app_id;
     if (!appId) {
       return res
